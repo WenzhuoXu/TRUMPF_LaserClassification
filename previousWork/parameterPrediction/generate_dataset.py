@@ -6,11 +6,12 @@
     Noting that this code only works with the photos shot at 0 degree.
 """
 
-import numpy as np
 import os
-import cv2
 import random
+
+import cv2
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def measure_object(image):
@@ -82,24 +83,24 @@ def data_augment(image, name, train_root, val_root, ratio=0.8):
     matRotate180 = cv2.getRotationMatrix2D((127, 127), 180, 1.0)
 
     # generate augmented images
-    image_dict = {'s':          image,                                                      # the original image
-                  'sc':         contrast(image),                                            # adjust the contrast ratio
-                  'sb':         bright(image),                                              # adjust the brightness
-                  's_f0':       cv2.flip(image, 0),                                         # flip the image vertically
-                  's_f0c':      contrast(cv2.flip(image, 0)),                               # flip & contrast
-                  's_f0b':      bright(cv2.flip(image, 0)),                                 # flip & bright
-                  's_f1':       cv2.flip(image, 1),                                         # flip the image horizontally
-                  's_f1c':      contrast(cv2.flip(image, 1)),                               # flip & contrast
-                  's_f1b':      bright(cv2.flip(image, 1)),                                 # flip & bright
-                  's_r_90':     cv2.warpAffine(image, matRotate_90, (0, 0)),                # rotate -90 degrees
-                  's_r_90c':    contrast(cv2.warpAffine(image, matRotate_90, (0, 0))),      # rotate & contrast
-                  's_r_90b':    bright(cv2.warpAffine(image, matRotate_90, (0, 0))),        # rotate & bright
-                  's_r90':      cv2.warpAffine(image, matRotate90, (0, 0)),                 # rotate 90 degrees
-                  's_r90c':     contrast(cv2.warpAffine(image, matRotate90, (0, 0))),       # rotate & contrast
-                  's_r90b':     bright(cv2.warpAffine(image, matRotate90, (0, 0))),         # rotate & bright
-                  's_r180':     cv2.warpAffine(image, matRotate180, (0, 0)),                # rotate 180 degrees
-                  's_r180c':    contrast(cv2.warpAffine(image, matRotate180, (0, 0))),      # rotate & contrast
-                  's_r180b':    bright(cv2.warpAffine(image, matRotate180, (0, 0)))         # rotate & bright
+    image_dict = {'s': image,  # the original image
+                  'sc': contrast(image),  # adjust the contrast ratio
+                  'sb': bright(image),  # adjust the brightness
+                  's_f0': cv2.flip(image, 0),  # flip the image vertically
+                  's_f0c': contrast(cv2.flip(image, 0)),  # flip & contrast
+                  's_f0b': bright(cv2.flip(image, 0)),  # flip & bright
+                  's_f1': cv2.flip(image, 1),  # flip the image horizontally
+                  's_f1c': contrast(cv2.flip(image, 1)),  # flip & contrast
+                  's_f1b': bright(cv2.flip(image, 1)),  # flip & bright
+                  's_r_90': cv2.warpAffine(image, matRotate_90, (0, 0)),  # rotate -90 degrees
+                  's_r_90c': contrast(cv2.warpAffine(image, matRotate_90, (0, 0))),  # rotate & contrast
+                  's_r_90b':    bright(cv2.warpAffine(image, matRotate_90, (0, 0))),  # rotate & bright
+                  's_r90':      cv2.warpAffine(image, matRotate90, (0, 0)),  # rotate 90 degrees
+                  's_r90c':     contrast(cv2.warpAffine(image, matRotate90, (0, 0))),  # rotate & contrast
+                  's_r90b':     bright(cv2.warpAffine(image, matRotate90, (0, 0))),  # rotate & bright
+                  's_r180':     cv2.warpAffine(image, matRotate180, (0, 0)),  # rotate 180 degrees
+                  's_r180c':    contrast(cv2.warpAffine(image, matRotate180, (0, 0))),  # rotate & contrast
+                  's_r180b':    bright(cv2.warpAffine(image, matRotate180, (0, 0)))  # rotate & bright
                   }
 
     # save the augmented images
