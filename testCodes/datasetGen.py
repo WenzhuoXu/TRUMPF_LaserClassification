@@ -36,8 +36,8 @@ if __name__ == "__main__":
                 img_back[0:30, ] = 255
                 img_back[(rows - 30):rows, ] = 255
 
-                plt.figure("img_back")
-                plt.imshow(img_back)
+                # plt.figure("img_back")
+                # plt.imshow(img_back)
                 plt.axis('off')
                 plt.savefig('F:/Work/Bachelor-thesis/Data/data_highfreq/' + filename, transparent=True)
 
