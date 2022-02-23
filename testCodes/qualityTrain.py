@@ -2,8 +2,10 @@ import os
 
 import pandas as pd
 import torch
+import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import Dataset, DataLoader
+from torchvision import models
 from torchvision import transforms
 from torchvision.io import read_image
 
@@ -54,8 +56,13 @@ class LaserCutEvalDataset(Dataset):
 
 
 train_transforms = transforms.Compose([
+    transforms.RandomHorizontalFlip(p=0.5),
+    transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0),
+    transforms.RandomAffine(degrees=20, translate=(0.1, 0.1), scale=(0.8, 1.2),
+                            shear=None, resample=False, fillcolor=(255, 255, 255)),
     transforms.ToTensor(),
 ])
+
 test_transforms = transforms.Compose([
     transforms.ToTensor(),
 ])
@@ -71,18 +78,46 @@ print(f'Using {device} device')
 
 
 class NeuralNetwork(nn.Module):
-    def __init__(self):
+    def __init__(self, n_speed_classes, n_focus_classes, n_pressure_classes, n_quality_classes):
         super(NeuralNetwork, self).__init__()
-        self.flatten = nn.Flatten()
-        self.linear_relu_stack = nn.Sequential(
-            nn.Linear(28 * 28, 512),
-            nn.ReLU(),
-            nn.Linear(512, 512),
-            nn.ReLU(),
-            nn.Linear(512, 10),
+
+        self.base_model = models.mobilenet_v2().features
+        last_channel = models.mobilenet_v2().last_channel
+
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
+
+        self.speed = nn.Sequential(
+            nn.Dropout(p=0.2),
+            nn.Linear(in_features=last_channel, out_features=n_speed_classes)
+        )
+        self.focus = nn.Sequential(
+            nn.Dropout(p=0.2),
+            nn.Linear(in_features=last_channel, out_features=n_focus_classes)
+        )
+        self.pressure = nn.Sequential(
+            nn.Dropout(p=0.2),
+            nn.Linear(in_features=last_channel, out_features=n_pressure_classes)
+        )
+        self.quality = nn.Sequential(
+            nn.Dropout(p=0.2),
+            nn.Linear(in_features=last_channel, out_features=n_quality_classes)
         )
 
     def forward(self, x):
-        x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        return logits
+        x = self.base_model(x)
+        x = self.pool(x)
+
+        x = torch.flatten(x, start_dim=1)
+
+        return {
+            'speed': self.speed(x),
+            'focus': self.focus(x),
+            'pressure': self.pressure(x),
+            'quality': self.quality(x)
+        }
+
+    def get_loss(self, net_output, ground_truth):
+        speed_loss = F.cross_entropy(net_output['speed', ground_truth['speed']])
+        focus_loss = F.cross_entropy(net_output['focus', ground_truth['focus']])
+        pressure_loss = F.cross_entropy(net_output['pressure', ground_truth['pressure']])
+        quality_loss = F.cross_entropy(net_output['quality', ground_truth['quality']])
