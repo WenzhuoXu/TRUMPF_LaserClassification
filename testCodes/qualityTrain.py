@@ -1,6 +1,8 @@
 import os
 
 import pandas as pd
+import torch
+from torch import nn
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torchvision.io import read_image
@@ -43,3 +45,24 @@ testing_data = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
 
 training_dataloader = DataLoader(training_data, batch_size=16, shuffle=True)
 testing_dataloader = DataLoader(testing_data, batch_size=16, shuffle=True)
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print(f'Using {device} device')
+
+
+class NeuralNetwork(nn.Module):
+    def __init__(self):
+        super(NeuralNetwork, self).__init__()
+        self.flatten = nn.Flatten()
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(28 * 28, 512),
+            nn.ReLU(),
+            nn.Linear(512, 512),
+            nn.ReLU(),
+            nn.Linear(512, 10),
+        )
+
+    def forward(self, x):
+        x = self.flatten(x)
+        logits = self.linear_relu_stack(x)
+        return logits
