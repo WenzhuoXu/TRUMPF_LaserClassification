@@ -14,23 +14,31 @@ img_dir = 'F:/Work/Bachelor-thesis/Data/data_highfreq'
 
 class LaserCutEvalDataset(Dataset):
     def __init__(self, annotations_file, img_dir, transform=None, target_transform=None):
-        self.img_labels = pd.read_table(annotations_file, sep='\t')
+        self.img_data = pd.read_table(annotations_file, sep='\t')
+        self.img_content = self.img_data[0]
+        self.speed = self.img_data[1]
+        self.focus = self.img_data[2]
+        self.pressure = self.img_data[3]
+        self.quality = self.img_data[4]
         self.img_dir = img_dir
         self.transform = transform
         self.target_transform = target_transform
 
     def __len__(self):
-        return len(self.img_labels)
+        return len(self.img_content)
 
     def __getitem__(self, idx):
-        img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
+        img_path = os.path.join(self.img_dir, self.img_content.iloc[idx, 0])
         image = read_image(img_path)
-        label = self.img_labels.iloc[idx, 1:4]
+        speed = self.speed.iloc[idx]
+        focus = self.focus.iloc[idx]
+        pressure = self.pressure.iloc[idx]
+        quality = self.quality.iloc[idx]
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
             image = self.target_transform(image)
-        return image, label
+        return image, speed, focus, pressure, quality
 
 
 train_transforms = transforms.Compose([

@@ -47,10 +47,12 @@ if __name__ == "__main__":
             # imsave.save('F:/Work/Bachelor-thesis/Data/data_highfreq/' + filename)
 
             if random.random() < 0.8:
-                training_index.write(filename + '\t' + str(datasheet.loc[i - 1, 'focus']) + '\t' + str(
-                    datasheet.loc[i - 1, 'pressure']) + '\n')
+                training_index.write(filename + '\t' + str(datasheet.loc[i - 1, 'speed']) + '\t' + str(
+                    datasheet.loc[i - 1, 'focus']) + '\t' + str(
+                    datasheet.loc[i - 1, 'pressure']) + '\t' + str(datasheet.loc[i - 1, 'quality']) + '\n')
             else:
-                testing_index.write(filename + '\t' + str(datasheet.loc[i - 1, 'focus']) + '\t' + str(
-                    datasheet.loc[i - 1, 'pressure']) + '\n')
+                testing_index.write(filename + '\t' + str(datasheet.loc[i - 1, 'speed']) + '\t' + str(
+                    datasheet.loc[i - 1, 'focus']) + '\t' + str(
+                    datasheet.loc[i - 1, 'pressure']) + '\t' + str(datasheet.loc[i - 1, 'quality']) + '\n')
 
             print(filename)
