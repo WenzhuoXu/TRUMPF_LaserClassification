@@ -14,6 +14,13 @@ testing_index = 'F:/Work/Bachelor-thesis/Data/data2021_ori/90_ori_testing_index.
 img_dir = 'F:/Work/Bachelor-thesis/Data/data_highfreq'
 
 
+class attributes:
+    n_speed: [6, 7.5, 9, 10.5, 12]
+    n_focus: [-2, -2.8, -3.5, -4.3, -5]
+    n_pressure: [7, 7.8, 8.5, 9.3, 10]
+    n_quality: [1, 2, 3]
+
+
 class LaserCutEvalDataset(Dataset):
     def __init__(self, annotations_file, img_dir, transform=None, target_transform=None):
         self.img_data = pd.read_table(annotations_file, sep='\t')
@@ -126,7 +133,16 @@ class NeuralNetwork(nn.Module):
         return loss, {'speed': speed_loss, 'focus': focus_loss, 'pressure': pressure_loss, 'quality': quality_loss}
 
 
+start_epoch = 1
 N_epochs = 50
 batch_size = 16
+num_workers = 6
 
-model = NeuralNetwork(n_speed_classes=training_data)
+model = NeuralNetwork(n_speed_classes=attributes.n_speed, n_focus_classes=attributes.n_focus,
+                      n_pressure_classes=attributes.n_pressure, n_quality_classes=attributes.n_quality).to(device)
+
+optimizer = torch.optim.Adam(model.parameters())
+
+for epoch in range(start_epoch, N_epochs + 1):
+    for batch in training_dataloader:
+        optimizer.zero_grad()
