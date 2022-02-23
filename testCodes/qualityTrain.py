@@ -121,3 +121,12 @@ class NeuralNetwork(nn.Module):
         focus_loss = F.cross_entropy(net_output['focus', ground_truth['focus']])
         pressure_loss = F.cross_entropy(net_output['pressure', ground_truth['pressure']])
         quality_loss = F.cross_entropy(net_output['quality', ground_truth['quality']])
+
+        loss = speed_loss + focus_loss + pressure_loss + quality_loss
+        return loss, {'speed': speed_loss, 'focus': focus_loss, 'pressure': pressure_loss, 'quality': quality_loss}
+
+
+N_epochs = 50
+batch_size = 16
+
+model = NeuralNetwork(n_speed_classes=training_data)
