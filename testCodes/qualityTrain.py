@@ -30,15 +30,27 @@ class LaserCutEvalDataset(Dataset):
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.img_content.iloc[idx, 0])
         image = read_image(img_path)
+
         speed = self.speed.iloc[idx]
         focus = self.focus.iloc[idx]
         pressure = self.pressure.iloc[idx]
         quality = self.quality.iloc[idx]
+
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
             image = self.target_transform(image)
-        return image, speed, focus, pressure, quality
+
+        dict_data = {
+            'image': image,
+            'labels': {
+                'speed': speed,
+                'focus': focus,
+                'pressure': pressure,
+                'quality': quality,
+            }
+        }
+        return dict_data
 
 
 train_transforms = transforms.Compose([
