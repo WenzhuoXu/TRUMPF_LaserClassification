@@ -1,8 +1,10 @@
 import os
+import warnings
 
 import pandas as pd
 import torch
 import torch.nn.functional as F
+from sklearn.metrics import balanced_accuracy_score
 from torch import nn
 from torch.utils.data import Dataset, DataLoader
 from torchvision import models
@@ -133,6 +135,29 @@ class NeuralNetwork(nn.Module):
         return loss, {'speed': speed_loss, 'focus': focus_loss, 'pressure': pressure_loss, 'quality': quality_loss}
 
 
+def calculate_metrics(output, target):
+    _, predicted_speed = output['speed'].cpu().max(1)
+    gt_speed = target['speed_labels'].cpu()
+
+    _, predicted_focus = output['focus'].cpu().max(1)
+    gt_focus = target['focus_labels'].cpu()
+
+    _, predicted_pressure = output['pressure'].cpu().max(1)
+    gt_pressure = target['pressure_labels'].cpu()
+
+    _, predicted_quality = output['quality'].cpu().max(1)
+    gt_quality = target['quality_labels'].cpu()
+
+    with warnings.catch_warnings():  # sklearn 在处理混淆矩阵中的零行时可能会产生警告
+        warnings.simplefilter("ignore")
+        accuracy_speed = balanced_accuracy_score(y_true=gt_speed.numpy(), y_pred=predicted_speed.numpy())
+        accuracy_focus = balanced_accuracy_score(y_true=gt_focus.numpy(), y_pred=predicted_focus.numpy())
+        accuracy_pressure = balanced_accuracy_score(y_true=gt_pressure.numpy(), y_pred=predicted_pressure.numpy())
+        accuracy_quality = balanced_accuracy_score(y_true=gt_quality.numpy(), y_pred=predicted_quality.numpy())
+
+    return accuracy_speed, accuracy_focus, accuracy_pressure, accuracy_quality
+
+
 start_epoch = 1
 N_epochs = 50
 batch_size = 16
@@ -143,6 +168,29 @@ model = NeuralNetwork(n_speed_classes=attributes.n_speed, n_focus_classes=attrib
 
 optimizer = torch.optim.Adam(model.parameters())
 
+print('Start training...')
+
 for epoch in range(start_epoch, N_epochs + 1):
+    total_loss = 0
+    accuracy_speed = 0
+    accuracy_focus = 0
+    accuracy_pressure = 0
+    accuracy_quality = 0
     for batch in training_dataloader:
         optimizer.zero_grad()
+        img = batch['img']
+        target_labels = batch['labels']
+        target_labels = {t: target_labels[t].to(device) for t in target_labels}
+        output = model(img.to(device))
+
+        loss_train, losses_train = model.get_loss(output, target_labels)
+        total_loss += loss_train.item()
+        batch_accuracy_speed, batch_accuracy_focus, batch_accuracy_pressure, batch_accuracy_quality = \
+            calculate_metrics(output, target_labels)
+        accuracy_speed += batch_accuracy_speed
+        accuracy_focus += batch_accuracy_focus
+        accuracy_pressure += batch_accuracy_pressure
+        accuracy_quality += batch_accuracy_quality
+
+        loss_train.backward()
+        optimizer.step()
