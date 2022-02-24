@@ -1,5 +1,6 @@
 import os
 import warnings
+from datetime import datetime
 
 import pandas as pd
 import torch
@@ -7,6 +8,7 @@ import torch.nn.functional as F
 from sklearn.metrics import balanced_accuracy_score
 from torch import nn
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.tensorboard import SummaryWriter
 from torchvision import models
 from torchvision import transforms
 from torchvision.io import read_image
@@ -14,6 +16,70 @@ from torchvision.io import read_image
 training_index = 'F:/Work/Bachelor-thesis/Data/data2021_ori/90_ori_training_index.txt'
 testing_index = 'F:/Work/Bachelor-thesis/Data/data2021_ori/90_ori_testing_index.txt'
 img_dir = 'F:/Work/Bachelor-thesis/Data/data_highfreq'
+
+
+def get_cur_time():
+    return datetime.strftime(datetime.now(), '%Y-%m-%d_%H-%M')
+
+
+def checkpoint_save(model, name, epoch):
+    f = os.path.join(name, 'checkpoint-{:06d}.pth'.format(epoch))
+    torch.save(model.state_dict(), f)
+    print('Saved checkpoint:', f)
+
+
+def checkpoint_load(model, name):
+    print('Restoring checkpoint: {}'.format(name))
+    model.load_state_dict(torch.load(name, map_location='cpu'))
+    epoch = int(os.path.splitext(os.path.basename(name))[0].split('-')[1])
+    return epoch
+
+
+def validate(model, dataloader, logger, iteration, device, checkpoint=None):
+    if checkpoint is not None:
+        checkpoint_load(model, checkpoint)
+
+    model.eval()
+    with torch.no_grad():
+        avg_loss = 0
+        accuracy_speed = 0
+        accuracy_focus = 0
+        accuracy_pressure = 0
+        accuracy_quality = 0
+
+        for batch in dataloader:
+            img = batch['img']
+            target_labels = batch['labels']
+            target_labels = {t: target_labels[t].to(device) for t in target_labels}
+            output = model(img.to(device))
+
+            val_train, val_train_losses = model.get_loss(output, target_labels)
+            avg_loss += val_train.item()
+            batch_accuracy_speed, batch_accuracy_focus, batch_accuracy_pressure, batch_accuracy_quality = \
+                calculate_metrics(output, target_labels)
+
+            accuracy_speed += batch_accuracy_speed
+            accuracy_focus += batch_accuracy_focus
+            accuracy_pressure += batch_accuracy_pressure
+            accuracy_quality += batch_accuracy_quality
+
+    n_samples = len(dataloader)
+    avg_loss /= n_samples
+    accuracy_speed /= n_samples
+    accuracy_focus /= n_samples
+    accuracy_pressure /= n_samples
+    accuracy_quality /= n_samples
+    print('-' * 72)
+    print("Validation  loss: {:.4f}, speed: {:.4f}, focus: {:.4f}, pressure: {:.4f}, quality: {:.4f}\n".format(
+        avg_loss, accuracy_speed, accuracy_focus, accuracy_pressure, accuracy_quality))
+
+    logger.add_scalar('val_loss', avg_loss, iteration)
+    logger.add_scalar('val_accuracy_speed', accuracy_speed, iteration)
+    logger.add_scalar('val_accuracy_focus', accuracy_focus, iteration)
+    logger.add_scalar('val_accuracy_pressure', accuracy_pressure, iteration)
+    logger.add_scalar('val_accuracy_quality', accuracy_quality, iteration)
+
+    model.train()
 
 
 class attributes:
@@ -81,6 +147,8 @@ testing_data = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
 
 training_dataloader = DataLoader(training_data, batch_size=16, shuffle=True)
 testing_dataloader = DataLoader(testing_data, batch_size=16, shuffle=True)
+
+n_train_samples = len(training_dataloader)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Using {device} device')
@@ -158,6 +226,12 @@ def calculate_metrics(output, target):
     return accuracy_speed, accuracy_focus, accuracy_pressure, accuracy_quality
 
 
+logdir = os.path.join('./logs/', get_cur_time())
+savedir = os.path.join('./checkpoints/', get_cur_time())
+os.makedirs(logdir, exist_ok=True)
+os.makedirs(savedir, exist_ok=True)
+logger = SummaryWriter(logdir)
+
 start_epoch = 1
 N_epochs = 50
 batch_size = 16
@@ -194,3 +268,20 @@ for epoch in range(start_epoch, N_epochs + 1):
 
         loss_train.backward()
         optimizer.step()
+
+    print("epoch {:4d}, loss: {:.4f}, speed: {:.4f}, focus: {:.4f}, pressure: {:.4f}, quality: {:.4f}".format(
+        epoch,
+        total_loss / n_train_samples,
+        accuracy_speed / n_train_samples,
+        accuracy_focus / n_train_samples,
+        accuracy_pressure / n_train_samples,
+        accuracy_quality / n_train_samples, )
+    )
+
+    logger.add_scalar('train_loss', total_loss / n_train_samples, epoch)
+
+    if epoch % 5 == 0:
+        validate(model, testing_dataloader, logger, epoch, device)
+
+    if epoch % 25 == 0:
+        checkpoint_save(model, savedir, epoch)
