@@ -82,16 +82,22 @@ def validate(model, dataloader, logger, iteration, device, checkpoint=None):
     model.train()
 
 
-class attributes:
-    n_speed: [6, 7.5, 9, 10.5, 12]
-    n_focus: [-2, -2.8, -3.5, -4.3, -5]
-    n_pressure: [7, 7.8, 8.5, 9.3, 10]
-    n_quality: [1, 2, 3]
+class Attributes:
+    def __init__(self, annotation_file):
+        self.speed_labels = [6, 7.5, 9, 10.5, 12]
+        self.focus_labels = [-2, -2.8, -3.5, -4.3, -5]
+        self.pressure_labels = [7, 7.8, 8.5, 9.3, 10]
+        self.quality_labels = [1, 2, 3]
+
+        self.num_speed = len(self.speed_labels)
+        self.num_focus = len(self.focus_labels)
+        self.num_pressure = len(self.pressure_labels)
+        self.num_quality = len(self.quality_labels)
 
 
 class LaserCutEvalDataset(Dataset):
     def __init__(self, annotations_file, img_dir, transform=None, target_transform=None):
-        self.img_data = pd.read_table(annotations_file, sep='\t')
+        self.img_data = pd.read_table(annotations_file, sep='\t', header=None, names=None)
         self.img_content = self.img_data[0]
         self.speed = self.img_data[1]
         self.focus = self.img_data[2]
@@ -236,6 +242,8 @@ start_epoch = 1
 N_epochs = 50
 batch_size = 16
 num_workers = 6
+
+attributes = Attributes()
 
 model = NeuralNetwork(n_speed_classes=attributes.n_speed, n_focus_classes=attributes.n_focus,
                       n_pressure_classes=attributes.n_pressure, n_quality_classes=attributes.n_quality).to(device)
