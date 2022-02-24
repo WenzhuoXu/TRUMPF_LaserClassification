@@ -94,6 +94,18 @@ class Attributes:
         self.num_pressure = len(self.pressure_labels)
         self.num_quality = len(self.quality_labels)
 
+        self.speed_id_to_name = dict(zip(range(len(self.speed_labels)), self.speed_labels))
+        self.speed_name_to_id = dict(zip(self.speed_labels, range(len(self.speed_labels))))
+
+        self.focus_id_to_name = dict(zip(range(len(self.focus_labels)), self.focus_labels))
+        self.focus_name_to_id = dict(zip(self.focus_labels, range(len(self.focus_labels))))
+
+        self.pressure_id_to_name = dict(zip(range(len(self.pressure_labels)), self.pressure_labels))
+        self.pressure_name_to_id = dict(zip(self.pressure_labels, range(len(self.pressure_labels))))
+
+        self.quality_id_to_name = dict(zip(range(len(self.quality_labels)), self.quality_labels))
+        self.quality_name_to_id = dict(zip(self.quality_labels, range(len(self.quality_labels))))
+
 
 class LaserCutEvalDataset(Dataset):
     def __init__(self, annotations_file, img_dir, transform=None, target_transform=None):
@@ -243,10 +255,10 @@ N_epochs = 50
 batch_size = 16
 num_workers = 6
 
-attributes = Attributes()
+attributes = Attributes(training_index)
 
-model = NeuralNetwork(n_speed_classes=attributes.n_speed, n_focus_classes=attributes.n_focus,
-                      n_pressure_classes=attributes.n_pressure, n_quality_classes=attributes.n_quality).to(device)
+model = NeuralNetwork(n_speed_classes=attributes.num_speed, n_focus_classes=attributes.num_focus,
+                      n_pressure_classes=attributes.num_pressure, n_quality_classes=attributes.num_quality).to(device)
 
 optimizer = torch.optim.Adam(model.parameters())
 
