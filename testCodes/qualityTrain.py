@@ -13,9 +13,9 @@ from torchvision import models
 from torchvision import transforms
 from torchvision.io import read_image
 
-training_index = 'F:/Work/Bachelor-thesis/Data/data2021_ori/90_ori_training_index.txt'
-testing_index = 'F:/Work/Bachelor-thesis/Data/data2021_ori/90_ori_testing_index.txt'
-img_dir = 'F:/Work/Bachelor-thesis/Data/data_highfreq'
+training_index = 'F:/BachelorThesis/Data/data2021_ori/90_ori_training_index.txt'
+testing_index = 'F:/BachelorThesis/Data/data2021_ori/90_ori_testing_index.txt'
+img_dir = 'F:/BachelorThesis/Data/data_highfreq'
 
 
 def get_cur_time():
@@ -48,7 +48,7 @@ def validate(model, dataloader, logger, iteration, device, checkpoint=None):
         accuracy_quality = 0
 
         for batch in dataloader:
-            img = batch['img']
+            img = batch['image']
             target_labels = batch['labels']
             target_labels = {t: target_labels[t].to(device) for t in target_labels}
             output = model(img.to(device))
@@ -167,12 +167,13 @@ test_transforms = transforms.Compose([
 training_data = LaserCutEvalDataset(training_index, img_dir, train_transforms)
 testing_data = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
 
-training_dataloader = DataLoader(training_data, batch_size=16, shuffle=True)
-testing_dataloader = DataLoader(testing_data, batch_size=16, shuffle=True)
+training_dataloader = DataLoader(training_data, batch_size=32, shuffle=True)
+testing_dataloader = DataLoader(testing_data, batch_size=32, shuffle=True)
 
 n_train_samples = len(training_dataloader)
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cpu'
+# device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Using {device} device')
 
 
@@ -216,10 +217,10 @@ class NeuralNetwork(nn.Module):
         }
 
     def get_loss(self, net_output, ground_truth):
-        speed_loss = F.cross_entropy(net_output['speed', ground_truth['speed']])
-        focus_loss = F.cross_entropy(net_output['focus', ground_truth['focus']])
-        pressure_loss = F.cross_entropy(net_output['pressure', ground_truth['pressure']])
-        quality_loss = F.cross_entropy(net_output['quality', ground_truth['quality']])
+        speed_loss = F.cross_entropy(net_output['speed'], ground_truth['speed'])
+        focus_loss = F.cross_entropy(net_output['focus'], ground_truth['focus'])
+        pressure_loss = F.cross_entropy(net_output['pressure'], ground_truth['pressure'])
+        quality_loss = F.cross_entropy(net_output['quality'], ground_truth['quality'])
 
         loss = speed_loss + focus_loss + pressure_loss + quality_loss
         return loss, {'speed': speed_loss, 'focus': focus_loss, 'pressure': pressure_loss, 'quality': quality_loss}
@@ -227,16 +228,16 @@ class NeuralNetwork(nn.Module):
 
 def calculate_metrics(output, target):
     _, predicted_speed = output['speed'].cpu().max(1)
-    gt_speed = target['speed_labels'].cpu()
+    gt_speed = target['speed'].cpu()
 
     _, predicted_focus = output['focus'].cpu().max(1)
-    gt_focus = target['focus_labels'].cpu()
+    gt_focus = target['focus'].cpu()
 
     _, predicted_pressure = output['pressure'].cpu().max(1)
-    gt_pressure = target['pressure_labels'].cpu()
+    gt_pressure = target['pressure'].cpu()
 
     _, predicted_quality = output['quality'].cpu().max(1)
-    gt_quality = target['quality_labels'].cpu()
+    gt_quality = target['quality'].cpu()
 
     with warnings.catch_warnings():  # sklearn 在处理混淆矩阵中的零行时可能会产生警告
         warnings.simplefilter("ignore")
@@ -255,7 +256,7 @@ os.makedirs(savedir, exist_ok=True)
 logger = SummaryWriter(logdir)
 
 start_epoch = 1
-N_epochs = 50
+N_epochs = 1000
 batch_size = 16
 num_workers = 6
 
