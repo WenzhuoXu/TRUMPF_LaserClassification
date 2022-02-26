@@ -249,64 +249,66 @@ def calculate_metrics(output, target):
     return accuracy_speed, accuracy_focus, accuracy_pressure, accuracy_quality
 
 
-logdir = os.path.join('./logs/', get_cur_time())
-savedir = os.path.join('./checkpoints/', get_cur_time())
-os.makedirs(logdir, exist_ok=True)
-os.makedirs(savedir, exist_ok=True)
-logger = SummaryWriter(logdir)
+if __name__ == '__main__':
+    logdir = os.path.join('./logs/', get_cur_time())
+    savedir = os.path.join('./checkpoints/', get_cur_time())
+    os.makedirs(logdir, exist_ok=True)
+    os.makedirs(savedir, exist_ok=True)
+    logger = SummaryWriter(logdir)
 
-start_epoch = 1
-N_epochs = 1000
-batch_size = 16
-num_workers = 6
+    start_epoch = 1
+    N_epochs = 1000
+    # batch_size = 16
+    # num_workers = 6
 
-attributes = Attributes(training_index)
+    attributes = Attributes(training_index)
 
-model = NeuralNetwork(n_speed_classes=attributes.num_speed, n_focus_classes=attributes.num_focus,
-                      n_pressure_classes=attributes.num_pressure, n_quality_classes=attributes.num_quality).to(device)
+    model = NeuralNetwork(n_speed_classes=attributes.num_speed, n_focus_classes=attributes.num_focus,
+                          n_pressure_classes=attributes.num_pressure, n_quality_classes=attributes.num_quality).to(
+        device)
 
-optimizer = torch.optim.Adam(model.parameters())
+    optimizer = torch.optim.Adam(model.parameters())
 
-print('Start training...')
+    print('Start training...')
 
-for epoch in range(start_epoch, N_epochs + 1):
-    total_loss = 0
-    accuracy_speed = 0
-    accuracy_focus = 0
-    accuracy_pressure = 0
-    accuracy_quality = 0
-    for batch in training_dataloader:
-        optimizer.zero_grad()
-        img = batch['image']
-        target_labels = batch['labels']
-        target_labels = {t: target_labels[t].to(device) for t in target_labels}
-        output = model(img.to(device))
+    for epoch in range(start_epoch, N_epochs + 1):
+        total_loss = 0
+        accuracy_speed = 0
+        accuracy_focus = 0
+        accuracy_pressure = 0
+        accuracy_quality = 0
+        for batch in training_dataloader:
+            optimizer.zero_grad()
+            img = batch['image']
+            target_labels = batch['labels']
+            target_labels = {t: target_labels[t].to(device) for t in target_labels}
+            output = model(img.to(device))
 
-        loss_train, losses_train = model.get_loss(output, target_labels)
-        total_loss += loss_train.item()
-        batch_accuracy_speed, batch_accuracy_focus, batch_accuracy_pressure, batch_accuracy_quality = \
-            calculate_metrics(output, target_labels)
-        accuracy_speed += batch_accuracy_speed
-        accuracy_focus += batch_accuracy_focus
-        accuracy_pressure += batch_accuracy_pressure
-        accuracy_quality += batch_accuracy_quality
+            loss_train, losses_train = model.get_loss(output, target_labels)
+            total_loss += loss_train.item()
+            batch_accuracy_speed, batch_accuracy_focus, batch_accuracy_pressure, batch_accuracy_quality = \
+                calculate_metrics(output, target_labels)
+            accuracy_speed += batch_accuracy_speed
+            accuracy_focus += batch_accuracy_focus
+            accuracy_pressure += batch_accuracy_pressure
+            accuracy_quality += batch_accuracy_quality
 
-        loss_train.backward()
-        optimizer.step()
+            loss_train.backward()
+            optimizer.step()
 
-    print("epoch {:4d}, loss: {:.4f}, speed: {:.4f}, focus: {:.4f}, pressure: {:.4f}, quality: {:.4f}".format(
-        epoch,
-        total_loss / n_train_samples,
-        accuracy_speed / n_train_samples,
-        accuracy_focus / n_train_samples,
-        accuracy_pressure / n_train_samples,
-        accuracy_quality / n_train_samples, )
-    )
+        print("epoch {:4d}, loss: {:.4f}, speed: {:.4f}, focus: {:.4f}, pressure: {:.4f}, quality: {:.4f}".format(
+            epoch,
+            total_loss / n_train_samples,
+            accuracy_speed / n_train_samples,
+            accuracy_focus / n_train_samples,
+            accuracy_pressure / n_train_samples,
+            accuracy_quality / n_train_samples, )
+        )
 
-    logger.add_scalar('train_loss', total_loss / n_train_samples, epoch)
+        logger.add_scalar('train_loss', total_loss / n_train_samples, epoch)
 
-    if epoch % 5 == 0:
-        validate(model, testing_dataloader, logger, epoch, device)
+        if epoch % 5 == 0:
+            validate(model, testing_dataloader, logger, epoch, device)
 
-    if epoch % 25 == 0:
-        checkpoint_save(model, savedir, epoch)
+        if epoch % 25 == 0:
+            checkpoint_save(model, savedir, epoch)
