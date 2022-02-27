@@ -15,6 +15,7 @@ from qualityTrain import calculate_metrics
 mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
 
+training_index = 'F:/BachelorThesis/Data/data2021_ori/90_ori_training_index.txt'
 testing_index = 'F:/BachelorThesis/Data/data2021_ori/90_ori_testing_index.txt'
 img_dir = 'F:/BachelorThesis/Data/data_highfreq'
 
@@ -74,29 +75,29 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
             for i in range(img.shape[0]):
                 image = np.clip(img[i].permute(1, 2, 0).numpy() * std + mean, 0, 1)
 
-                predicted_speed = attributes.speed_id_to_name[predicted_speed[i].item()]
-                predicted_focus = attributes.focus_id_to_name[predicted_focus[i].item()]
-                predicted_pressure = attributes.pressure_id_to_name[predicted_pressure[i].item()]
-                predicted_quality = attributes.quality_id_to_name[predicted_quality[i].item()]
+                predicted_speed[i] = attributes.speed_id_to_name[predicted_speed[i].item()]
+                predicted_focus[i] = attributes.focus_id_to_name[predicted_focus[i].item()]
+                predicted_pressure[i] = attributes.pressure_id_to_name[predicted_pressure[i].item()]
+                predicted_quality[i] = attributes.quality_id_to_name[predicted_quality[i].item()]
 
-                gt_speed = attributes.speed_id_to_name[gt_speed[i].item()]
-                gt_focus = attributes.focus_id_to_name[gt_focus[i].item()]
-                gt_pressure = attributes.pressure_id_to_name[gt_pressure[i].item()]
-                gt_quality = attributes.quality_id_to_name[gt_quality[i].item()]
+                gt_speed[i] = attributes.speed_id_to_name[gt_speed[i].item()]
+                gt_focus[i] = attributes.focus_id_to_name[gt_focus[i].item()]
+                gt_pressure[i] = attributes.pressure_id_to_name[gt_pressure[i].item()]
+                gt_quality[i] = attributes.quality_id_to_name[gt_quality[i].item()]
 
-                gt_speed_all.append(gt_speed)
-                gt_focus_all.append(gt_focus)
-                gt_pressure_all.append(gt_pressure)
+                gt_speed_all.append(gt_speed[i])
+                gt_focus_all.append(gt_focus[i])
+                gt_pressure_all.append(gt_pressure[i])
 
-                predicted_speed_all.append(predicted_speed)
-                predicted_focus_all.append(predicted_focus)
-                predicted_pressure_all.append(predicted_pressure)
-                predicted_quality_all.append(predicted_quality)
+                predicted_speed_all.append(predicted_speed[i])
+                predicted_focus_all.append(predicted_focus[i])
+                predicted_pressure_all.append(predicted_pressure[i])
+                predicted_quality_all.append(predicted_quality[i])
 
                 imgs.append(image)
-                labels.append("{}\n{}\n{}".format(predicted_speed, predicted_focus, predicted_pressure,
-                                                  predicted_quality))
-                gt_labels.append("{}\n{}\n{}".format(gt_speed, gt_focus, gt_pressure, gt_quality))
+                labels.append("{}\n{}\n{}".format(predicted_speed[i], predicted_focus[i], predicted_pressure[i],
+                                                  predicted_quality[i]))
+                gt_labels.append("{}\n{}\n{}".format(gt_speed[i], gt_focus[i], gt_pressure[i], gt_quality[i]))
 
     if not show_gt:
         n_samples = len(dataloader)
@@ -113,10 +114,10 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
             cn_matrix = confusion_matrix(
                 y_true=gt_speed_all,
                 y_pred=predicted_speed_all,
-                labels=attributes.speed_labels,
+                labels=[6, 7, 9, 10, 12],
                 normalize='true')
-        ConfusionMatrixDisplay(cn_matrix, attributes.speed_labels).plot(
-            include_values=False, xticks_rotation='vertical')
+        ConfusionMatrixDisplay(cn_matrix).plot(
+           include_values=True, xticks_rotation='vertical')
         plt.title("Speed")
         plt.tight_layout()
         plt.show()
@@ -125,10 +126,10 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
         cn_matrix = confusion_matrix(
             y_true=gt_focus_all,
             y_pred=predicted_focus_all,
-            labels=attributes.focus_labels,
+            labels=[-2, -3, -4, -5],
             normalize='true')
-        ConfusionMatrixDisplay(cn_matrix, attributes.focus_labels).plot(
-            xticks_rotation='horizontal')
+        ConfusionMatrixDisplay(cn_matrix).plot(
+            include_values=True, xticks_rotation='horizontal')
         plt.title("Focus")
         plt.tight_layout()
         plt.show()
@@ -137,10 +138,10 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
         cn_matrix = confusion_matrix(
             y_true=gt_pressure_all,
             y_pred=predicted_pressure_all,
-            labels=attributes.pressure_labels,
+            labels=[7, 8, 9, 10],
             normalize='true')
-        ConfusionMatrixDisplay(cn_matrix, attributes.pressure_labels).plot(
-            include_values=False, xticks_rotation='vertical')
+        ConfusionMatrixDisplay(cn_matrix).plot(
+            include_values=True, xticks_rotation='vertical')
         plt.title("Pressure")
         plt.tight_layout()
         plt.show()
@@ -148,9 +149,9 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
         cn_matrix = confusion_matrix(
             y_true=gt_quality_all,
             y_pred=predicted_quality_all,
-            labels=attributes.quality_labels,
+            labels=[1, 2, 3],
             normalize='true')
-        ConfusionMatrixDisplay(cn_matrix, attributes.quality_labels).plot(
+        ConfusionMatrixDisplay(cn_matrix).plot(
             include_values=False, xticks_rotation='vertical')
         plt.title("Quality")
         plt.tight_layout()
@@ -183,18 +184,21 @@ if __name__ == '__main__':
                         help="Device: 'cuda' or 'cpu'")
     args = parser.parse_args()
 
-    device = torch.device("cuda" if torch.cuda.is_available() and args.device == 'cuda' else "cpu")
+    # device = torch.device("cuda" if torch.cuda.is_available() and args.device == 'cuda' else "cpu")
+    device = torch.device("cpu")
+
     # 属性变量包含数据集中类别的标签以及字符串名称和 ID 之间的映射
-    attributes = Attributes()
+    attributes = Attributes(testing_index)
 
     # 在验证期间，我们只使用张量和归一化变换
     test_transforms = transforms.Compose([
+        transforms.ToPILImage(),
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
     ])
 
     test_dataset = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
-    test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=False)
+    test_dataloader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
     model = NeuralNetwork(n_speed_classes=attributes.num_speed, n_focus_classes=attributes.num_focus,
                           n_pressure_classes=attributes.num_pressure, n_quality_classes=attributes.num_quality).to(
