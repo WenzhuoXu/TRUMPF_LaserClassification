@@ -88,6 +88,7 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
                 gt_speed_all.append(gt_speed[i])
                 gt_focus_all.append(gt_focus[i])
                 gt_pressure_all.append(gt_pressure[i])
+                gt_quality_all.append(gt_quality[i])
 
                 predicted_speed_all.append(predicted_speed[i])
                 predicted_focus_all.append(predicted_focus[i])
@@ -152,7 +153,7 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
             labels=[1, 2, 3],
             normalize='true')
         ConfusionMatrixDisplay(cn_matrix).plot(
-            include_values=False, xticks_rotation='vertical')
+            include_values=True, xticks_rotation='vertical')
         plt.title("Quality")
         plt.tight_layout()
         plt.show()
