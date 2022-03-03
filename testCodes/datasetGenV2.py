@@ -54,7 +54,7 @@ def image_reshape(img):
 
     src_h, src_w = binary.shape[:2]
     size = max(src_h, src_w)
-    dct_size = (size, size)
+    dct_size = (720, 720)
 
     result_gray = resize_keep_aspectratio(binary, dct_size)
 
@@ -67,23 +67,23 @@ def image_reshape(img):
 
 if __name__ == "__main__":
     datasheet = pd.read_excel('F:/BachelorThesis/Data/datasheet.xlsx')
-    datasheet['speed'].replace(6, 0, inplace=True)
-    datasheet['speed'].replace(7.5, 1, inplace=True)
-    datasheet['speed'].replace(9, 2, inplace=True)
-    datasheet['speed'].replace(10.5, 3, inplace=True)
-    datasheet['speed'].replace(12, 4, inplace=True)
+    datasheet['speed'].replace(6, '0', inplace=True)
+    datasheet['speed'].replace(7.5, '1', inplace=True)
+    datasheet['speed'].replace(9, '2', inplace=True)
+    datasheet['speed'].replace(10.5, '3', inplace=True)
+    datasheet['speed'].replace(12, '4', inplace=True)
 
-    datasheet.replace(-2, 0, inplace=True)
-    datasheet.replace(-2.8, 1, inplace=True)
-    datasheet.replace(-3.5, 2, inplace=True)
-    datasheet.replace(-4.3, 3, inplace=True)
-    datasheet.replace(-5, 4, inplace=True)
+    datasheet.replace(-2, '0', inplace=True)
+    datasheet.replace(-2.8, '1', inplace=True)
+    datasheet.replace(-3.5, '2', inplace=True)
+    datasheet.replace(-4.3, '3', inplace=True)
+    datasheet.replace(-5, '4', inplace=True)
 
-    datasheet['pressure'].replace(7, 0, inplace=True)
-    datasheet['pressure'].replace(7.8, 1, inplace=True)
-    datasheet['pressure'].replace(8.5, 2, inplace=True)
-    datasheet['pressure'].replace(9.3, 3, inplace=True)
-    datasheet['pressure'].replace(10, 4, inplace=True)
+    datasheet['pressure'].replace(7, '0', inplace=True)
+    datasheet['pressure'].replace(7.8, '1', inplace=True)
+    datasheet['pressure'].replace(8.5, '2', inplace=True)
+    datasheet['pressure'].replace(9.3, '3', inplace=True)
+    datasheet['pressure'].replace(10, '4', inplace=True)
 
     testing_index = open(data_dir + "_testing_index.txt", "w")
     training_index = open(data_dir + "_training_index.txt", "w")
