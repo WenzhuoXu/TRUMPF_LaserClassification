@@ -1,6 +1,6 @@
-import numpy as np
 import pandas as pd
-from src_AI.algorithm import *
+
+from algorithm import *
 
 # 文件的名字
 FILENAME = "../data.xlsx"

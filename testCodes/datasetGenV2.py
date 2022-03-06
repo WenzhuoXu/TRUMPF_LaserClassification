@@ -2,11 +2,9 @@ import os
 import random
 
 import cv2
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
-data_dir = 'F:/BachelorThesis/Data/data2021_ori/90_ori'
+data_dir = '../Data/data2021_ori/90_ori'
 
 
 def resize_keep_aspectratio(image_src, dst_size):
@@ -54,19 +52,20 @@ def image_reshape(img):
 
     src_h, src_w = binary.shape[:2]
     size = max(src_h, src_w)
-    dct_size = (720, 720)
+    dct_size = (224, 224)
 
     result_gray = resize_keep_aspectratio(binary, dct_size)
 
     result = cv2.cvtColor(result_gray, cv2.COLOR_GRAY2RGB)
     # result = cv2.bitwise_and(img, mask)
-    # cv2.imshow('result', result)
-    # cv2.waitKey(0)
+    cv2.imshow('result', result)
+    cv2.waitKey(0)
     return result
 
 
 if __name__ == "__main__":
-    datasheet = pd.read_excel('F:/BachelorThesis/Data/datasheet.xlsx')
+    datasheet_path = os.path.join(os.path.abspath('.'), '/Data/datasheet.xlsx')
+    datasheet = pd.read_excel(datasheet_path)
     datasheet['speed'].replace(6, '0', inplace=True)
     datasheet['speed'].replace(7.5, '1', inplace=True)
     datasheet['speed'].replace(9, '2', inplace=True)
@@ -95,7 +94,7 @@ if __name__ == "__main__":
 
             savefig = image_reshape(img)
 
-            cv2.imwrite('F:/BachelorThesis/Data/data_highfreq/' + filename, savefig)
+            cv2.imwrite('../Data/data_highfreq/' + filename, savefig)
             # imsave = Image.fromarray(np.uint8(img_back))
             # imsave.save('F:/Work/Bachelor-thesis/Data/data_highfreq/' + filename)
 

@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -109,7 +111,7 @@ class OurNeuralNetwork:
 FILENAME = "../data.xlsx"
 # 禁用科学计数法
 pd.set_option('float_format', lambda x: '%.3f' % x)
-np.set_printoptions(suppress=True, threshold=np.nan)
+np.set_printoptions(suppress=True, threshold=sys.maxsize)
 # 得到的DataFrame分别为总价、面积、房间、客厅、年份
 data = pd.read_excel(FILENAME, header=0, usecols="A,D,H,I,J")
 # DataFrame转化为array
