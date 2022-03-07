@@ -49,6 +49,9 @@ def image_reshape(img):
     # se = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
     # se = cv2.morphologyEx(se, cv2.MORPH_CLOSE, (2, 2))
     # mask = cv2.dilate(binary, se)
+    edge = cv2.Canny(binary, 80, 120)
+    # cv2.imshow('edge', edge)
+    # cv2.waitKey(0)
 
     src_h, src_w = binary.shape[:2]
     size = max(src_h, src_w)
