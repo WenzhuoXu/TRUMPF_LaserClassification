@@ -4,7 +4,7 @@ import random
 import cv2
 import pandas as pd
 
-data_dir = '../Data/data2021_ori/90_ori'
+data_dir = 'Data/data2021_ori/90_ori'
 
 
 def resize_keep_aspectratio(image_src, dst_size):
@@ -64,7 +64,7 @@ def image_reshape(img):
 
 
 if __name__ == "__main__":
-    datasheet_path = os.path.abspath('../Data/datasheet.xlsx')
+    datasheet_path = os.path.abspath('Data/datasheet.xlsx')
     datasheet = pd.read_excel(datasheet_path)
     datasheet['speed'].replace(6, '0', inplace=True)
     datasheet['speed'].replace(7.5, '1', inplace=True)
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
             savefig = image_reshape(img)
 
-            cv2.imwrite('../Data/data_highfreq/' + filename, savefig)
+            cv2.imwrite('Data/data_highfreq/' + filename, savefig)
             # imsave = Image.fromarray(np.uint8(img_back))
             # imsave.save('F:/Work/Bachelor-thesis/Data/data_highfreq/' + filename)
 
