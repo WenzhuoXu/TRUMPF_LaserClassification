@@ -49,15 +49,16 @@ def image_reshape(img):
     # se = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
     # se = cv2.morphologyEx(se, cv2.MORPH_CLOSE, (2, 2))
     # mask = cv2.dilate(binary, se)
-    edge = cv2.Canny(binary, 80, 120)
+    # edge = cv2.Canny(binary, 80, 100)
+    edge = cv2.Laplacian(gray, cv2.CV_8U, ksize=3)
     # cv2.imshow('edge', edge)
     # cv2.waitKey(0)
 
-    src_h, src_w = binary.shape[:2]
+    src_h, src_w = edge.shape[:2]
     size = max(src_h, src_w)
-    dct_size = (224, 224)
+    dct_size = (720, 720)
 
-    result_gray = resize_keep_aspectratio(binary, dct_size)
+    result_gray = resize_keep_aspectratio(edge, dct_size)
 
     result = cv2.cvtColor(result_gray, cv2.COLOR_GRAY2RGB)
     # result = cv2.bitwise_and(img, mask)
