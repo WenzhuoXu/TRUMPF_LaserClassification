@@ -58,13 +58,13 @@ def image_reshape(img):
 
     result = cv2.cvtColor(result_gray, cv2.COLOR_GRAY2RGB)
     # result = cv2.bitwise_and(img, mask)
-    cv2.imshow('result', result)
-    cv2.waitKey(0)
+    # cv2.imshow('result', result)
+    # cv2.waitKey(0)
     return result
 
 
 if __name__ == "__main__":
-    datasheet_path = os.path.join(os.path.abspath('.'), '/Data/datasheet.xlsx')
+    datasheet_path = os.path.abspath('../Data/datasheet.xlsx')
     datasheet = pd.read_excel(datasheet_path)
     datasheet['speed'].replace(6, '0', inplace=True)
     datasheet['speed'].replace(7.5, '1', inplace=True)

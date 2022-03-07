@@ -167,13 +167,13 @@ test_transforms = transforms.Compose([
 training_data = LaserCutEvalDataset(training_index, img_dir, train_transforms)
 testing_data = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
 
-training_dataloader = DataLoader(training_data, batch_size=32, shuffle=True)
-testing_dataloader = DataLoader(testing_data, batch_size=32, shuffle=True)
+training_dataloader = DataLoader(training_data, batch_size=16, shuffle=True)
+testing_dataloader = DataLoader(testing_data, batch_size=16, shuffle=True)
 
 n_train_samples = len(training_dataloader)
 
-device = 'cpu'
-# device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# device = 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Using {device} device')
 
 
