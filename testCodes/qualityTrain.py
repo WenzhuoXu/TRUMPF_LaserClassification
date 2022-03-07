@@ -13,9 +13,9 @@ from torchvision import models
 from torchvision import transforms
 from torchvision.io import read_image
 
-training_index = 'F:/BachelorThesis/Data/data2021_ori/90_ori_training_index.txt'
-testing_index = 'F:/BachelorThesis/Data/data2021_ori/90_ori_testing_index.txt'
-img_dir = 'F:/BachelorThesis/Data/data_highfreq'
+training_index = 'Data/data2021_ori/90_ori_training_index.txt'
+testing_index = 'Data/data2021_ori/90_ori_testing_index.txt'
+img_dir = 'Data/data_highfreq'
 
 
 def get_cur_time():
@@ -167,8 +167,8 @@ test_transforms = transforms.Compose([
 training_data = LaserCutEvalDataset(training_index, img_dir, train_transforms)
 testing_data = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
 
-training_dataloader = DataLoader(training_data, batch_size=16, shuffle=True)
-testing_dataloader = DataLoader(testing_data, batch_size=16, shuffle=True)
+training_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
+testing_dataloader = DataLoader(testing_data, batch_size=64, shuffle=True)
 
 n_train_samples = len(training_dataloader)
 
