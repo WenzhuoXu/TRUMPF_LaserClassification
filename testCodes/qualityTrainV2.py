@@ -151,7 +151,7 @@ class LaserCutEvalDataset(Dataset):
 train_transforms = transforms.Compose([
     transforms.ToPILImage(),
     transforms.RandomHorizontalFlip(p=0.5),
-    transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0),
+    # transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0),
     transforms.RandomAffine(degrees=20, translate=(0.1, 0.1), scale=(0.8, 1.2),
                             shear=None, resample=False, fillcolor=(255, 255, 255)),
     transforms.ToTensor(),
@@ -167,8 +167,8 @@ test_transforms = transforms.Compose([
 training_data = LaserCutEvalDataset(training_index, img_dir, train_transforms)
 testing_data = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
 
-training_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
-testing_dataloader = DataLoader(testing_data, batch_size=64, shuffle=True)
+training_dataloader = DataLoader(training_data, batch_size=2, shuffle=True)
+testing_dataloader = DataLoader(testing_data, batch_size=2, shuffle=True)
 
 n_train_samples = len(training_dataloader)
 
@@ -227,13 +227,13 @@ class NeuralNetwork(nn.Module):
 
 
 def calculate_metrics(output, target):
-    _, predicted_speed = output['speed'].cpu().max(1)
+    _, predicted_speed = output['speed'].cpu()
     gt_speed = target['speed'].cpu()
 
-    _, predicted_focus = output['focus'].cpu().max(1)
+    _, predicted_focus = output['focus'].cpu()
     gt_focus = target['focus'].cpu()
 
-    _, predicted_pressure = output['pressure'].cpu().max(1)
+    _, predicted_pressure = output['pressure'].cpu()
     gt_pressure = target['pressure'].cpu()
 
     _, predicted_quality = output['quality'].cpu().max(1)
@@ -241,9 +241,12 @@ def calculate_metrics(output, target):
 
     with warnings.catch_warnings():  # sklearn 在处理混淆矩阵中的零行时可能会产生警告
         warnings.simplefilter("ignore")
-        accuracy_speed = balanced_accuracy_score(y_true=gt_speed.numpy(), y_pred=predicted_speed.numpy())
-        accuracy_focus = balanced_accuracy_score(y_true=gt_focus.numpy(), y_pred=predicted_focus.numpy())
-        accuracy_pressure = balanced_accuracy_score(y_true=gt_pressure.numpy(), y_pred=predicted_pressure.numpy())
+        # accuracy_speed = balanced_accuracy_score(y_true=gt_speed.numpy(), y_pred=predicted_speed.numpy())
+        accuracy_speed = abs(predicted_speed - gt_speed) / gt_speed
+        # accuracy_focus = balanced_accuracy_score(y_true=gt_focus.numpy(), y_pred=predicted_focus.numpy())
+        accuracy_focus = abs(predicted_focus - gt_focus) / gt_focus
+        # accuracy_pressure = balanced_accuracy_score(y_true=gt_pressure.numpy(), y_pred=predicted_pressure.numpy())
+        accuracy_pressure = abs(predicted_pressure - gt_pressure) / gt_pressure
         accuracy_quality = balanced_accuracy_score(y_true=gt_quality.numpy(), y_pred=predicted_quality.numpy())
 
     return accuracy_speed, accuracy_focus, accuracy_pressure, accuracy_quality
