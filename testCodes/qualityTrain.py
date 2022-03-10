@@ -150,8 +150,8 @@ class LaserCutEvalDataset(Dataset):
 
 train_transforms = transforms.Compose([
     transforms.ToPILImage(),
-    transforms.RandomHorizontalFlip(p=0.5),
-    transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0),
+    # transforms.RandomHorizontalFlip(p=0.5),
+    # transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0),
     transforms.RandomAffine(degrees=20, translate=(0.1, 0.1), scale=(0.8, 1.2),
                             shear=None, resample=False, fillcolor=(255, 255, 255)),
     transforms.ToTensor(),
@@ -167,8 +167,8 @@ test_transforms = transforms.Compose([
 training_data = LaserCutEvalDataset(training_index, img_dir, train_transforms)
 testing_data = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
 
-training_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
-testing_dataloader = DataLoader(testing_data, batch_size=64, shuffle=True)
+training_dataloader = DataLoader(training_data, batch_size=16, shuffle=True)
+testing_dataloader = DataLoader(testing_data, batch_size=16, shuffle=True)
 
 n_train_samples = len(training_dataloader)
 
@@ -187,15 +187,15 @@ class NeuralNetwork(nn.Module):
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
 
         self.speed = nn.Sequential(
-            nn.Dropout(p=0.2),
+            nn.Dropout(p=0.3),
             nn.Linear(in_features=last_channel, out_features=n_speed_classes)
         )
         self.focus = nn.Sequential(
-            nn.Dropout(p=0.2),
+            nn.Dropout(p=0.5),
             nn.Linear(in_features=last_channel, out_features=n_focus_classes)
         )
         self.pressure = nn.Sequential(
-            nn.Dropout(p=0.2),
+            nn.Dropout(p=0.8),
             nn.Linear(in_features=last_channel, out_features=n_pressure_classes)
         )
         self.quality = nn.Sequential(
