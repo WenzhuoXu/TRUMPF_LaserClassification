@@ -8,10 +8,11 @@ import pandas as pd
 
 # from PIL import Image
 
-data_dir = 'F:/Work/Bachelor-thesis/Data/data2021_ori/90_ori'
+data_dir = 'Data/data2021_ori/90_ori'
 
 if __name__ == "__main__":
-    datasheet = pd.read_excel('F:/Work/Bachelor-thesis/Data/datasheet.xlsx')
+    datasheet_path = os.path.abspath('Data/datasheet.xlsx')
+    datasheet = pd.read_excel(datasheet_path)
     testing_index = open(data_dir + "_testing_index.txt", "w")
     training_index = open(data_dir + "_training_index.txt", "w")
     for i in range(1, 23):
@@ -41,7 +42,7 @@ if __name__ == "__main__":
             plt.figure("img_back")
             plt.imshow(img_back)
             plt.axis('off')
-            plt.savefig('F:/Work/Bachelor-thesis/Data/data_highfreq/' + filename, transparent=True)
+            plt.savefig('Data/data_highfreq/' + filename, transparent=True)
 
             # imsave = Image.fromarray(np.uint8(img_back))
             # imsave.save('F:/Work/Bachelor-thesis/Data/data_highfreq/' + filename)

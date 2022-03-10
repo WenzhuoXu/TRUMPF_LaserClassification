@@ -95,16 +95,16 @@ class Attributes:
         self.num_quality = len(self.quality_labels)
 
         self.speed_id_to_name = dict(zip(range(len(self.speed_labels)), self.speed_labels))
-        self.speed_name_to_id = dict(zip(self.speed_labels, range(len(self.speed_labels))))
+        # self.speed_name_to_id = dict(zip(self.speed_labels, range(len(self.speed_labels))))
 
         self.focus_id_to_name = dict(zip(range(len(self.focus_labels)), self.focus_labels))
-        self.focus_name_to_id = dict(zip(self.focus_labels, range(len(self.focus_labels))))
+        # self.focus_name_to_id = dict(zip(self.focus_labels, range(len(self.focus_labels))))
 
         self.pressure_id_to_name = dict(zip(range(len(self.pressure_labels)), self.pressure_labels))
-        self.pressure_name_to_id = dict(zip(self.pressure_labels, range(len(self.pressure_labels))))
+        # self.pressure_name_to_id = dict(zip(self.pressure_labels, range(len(self.pressure_labels))))
 
         self.quality_id_to_name = dict(zip(range(len(self.quality_labels)), self.quality_labels))
-        self.quality_name_to_id = dict(zip(self.quality_labels, range(len(self.quality_labels))))
+        # self.quality_name_to_id = dict(zip(self.quality_labels, range(len(self.quality_labels))))
 
 
 class LaserCutEvalDataset(Dataset):
@@ -167,8 +167,8 @@ test_transforms = transforms.Compose([
 training_data = LaserCutEvalDataset(training_index, img_dir, train_transforms)
 testing_data = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
 
-training_dataloader = DataLoader(training_data, batch_size=2, shuffle=True)
-testing_dataloader = DataLoader(testing_data, batch_size=2, shuffle=True)
+training_dataloader = DataLoader(training_data, batch_size=1, shuffle=True)
+testing_dataloader = DataLoader(testing_data, batch_size=1, shuffle=True)
 
 n_train_samples = len(training_dataloader)
 
