@@ -44,7 +44,7 @@ def validate(model, dataloader, logger, iteration, device, checkpoint=None):
         avg_loss = 0
         accuracy_speed = 0
         accuracy_focus = 0
-        # accuracy_pressure = 0
+        accuracy_pressure = 0
         accuracy_quality = 0
 
         for batch in dataloader:
@@ -55,28 +55,28 @@ def validate(model, dataloader, logger, iteration, device, checkpoint=None):
 
             val_train, val_train_losses = model.get_loss(output, target_labels)
             avg_loss += val_train.item()
-            batch_accuracy_speed, batch_accuracy_focus, batch_accuracy_quality = \
+            batch_accuracy_speed, batch_accuracy_focus, batch_accuracy_pressure, batch_accuracy_quality = \
                 calculate_metrics(output, target_labels)
 
             accuracy_speed += batch_accuracy_speed
             accuracy_focus += batch_accuracy_focus
-            # accuracy_pressure += batch_accuracy_pressure
+            accuracy_pressure += batch_accuracy_pressure
             accuracy_quality += batch_accuracy_quality
 
     n_samples = len(dataloader)
     avg_loss /= n_samples
     accuracy_speed /= n_samples
     accuracy_focus /= n_samples
-    # accuracy_pressure /= n_samples
+    accuracy_pressure /= n_samples
     accuracy_quality /= n_samples
     print('-' * 72)
-    print("Validation  loss: {:.4f}, speed: {:.4f}, focus: {:.4f}, quality: {:.4f}\n".format(
-        avg_loss, accuracy_speed, accuracy_focus, accuracy_quality))
+    print("Validation  loss: {:.4f}, speed: {:.4f}, focus: {:.4f}, pressure: {:.4f}, quality: {:.4f}\n".format(
+        avg_loss, accuracy_speed, accuracy_focus, accuracy_pressure, accuracy_quality))
 
     logger.add_scalar('val_loss', avg_loss, iteration)
     logger.add_scalar('val_accuracy_speed', accuracy_speed, iteration)
     logger.add_scalar('val_accuracy_focus', accuracy_focus, iteration)
-    # logger.add_scalar('val_accuracy_pressure', accuracy_pressure, iteration)
+    logger.add_scalar('val_accuracy_pressure', accuracy_pressure, iteration)
     logger.add_scalar('val_accuracy_quality', accuracy_quality, iteration)
 
     model.train()
@@ -86,25 +86,25 @@ class Attributes:
     def __init__(self, annotation_file):
         self.speed_labels = [6, 7.5, 9, 10.5, 12]
         self.focus_labels = [-2, -2.8, -3.5, -4.3, -5]
-        # self.pressure_labels = [7, 7.8, 8.5, 9.3, 10]
+        self.pressure_labels = [7, 7.8, 8.5, 9.3, 10]
         self.quality_labels = [1, 2, 3]
 
         self.num_speed = len(self.speed_labels)
         self.num_focus = len(self.focus_labels)
-        # self.num_pressure = len(self.pressure_labels)
+        self.num_pressure = len(self.pressure_labels)
         self.num_quality = len(self.quality_labels)
 
         self.speed_id_to_name = dict(zip(range(len(self.speed_labels)), self.speed_labels))
-        self.speed_name_to_id = dict(zip(self.speed_labels, range(len(self.speed_labels))))
+        # self.speed_name_to_id = dict(zip(self.speed_labels, range(len(self.speed_labels))))
 
         self.focus_id_to_name = dict(zip(range(len(self.focus_labels)), self.focus_labels))
-        self.focus_name_to_id = dict(zip(self.focus_labels, range(len(self.focus_labels))))
+        # self.focus_name_to_id = dict(zip(self.focus_labels, range(len(self.focus_labels))))
 
-        # self.pressure_id_to_name = dict(zip(range(len(self.pressure_labels)), self.pressure_labels))
+        self.pressure_id_to_name = dict(zip(range(len(self.pressure_labels)), self.pressure_labels))
         # self.pressure_name_to_id = dict(zip(self.pressure_labels, range(len(self.pressure_labels))))
 
         self.quality_id_to_name = dict(zip(range(len(self.quality_labels)), self.quality_labels))
-        self.quality_name_to_id = dict(zip(self.quality_labels, range(len(self.quality_labels))))
+        # self.quality_name_to_id = dict(zip(self.quality_labels, range(len(self.quality_labels))))
 
 
 class LaserCutEvalDataset(Dataset):
@@ -113,7 +113,7 @@ class LaserCutEvalDataset(Dataset):
         self.img_content = self.img_data[0]
         self.speed = self.img_data[1]
         self.focus = self.img_data[2]
-        # self.pressure = self.img_data[3]
+        self.pressure = self.img_data[3]
         self.quality = self.img_data[4]
         self.img_dir = img_dir
         self.transform = transform
@@ -128,7 +128,7 @@ class LaserCutEvalDataset(Dataset):
 
         speed = self.speed.iloc[idx]
         focus = self.focus.iloc[idx]
-        # pressure = self.pressure.iloc[idx]
+        pressure = self.pressure.iloc[idx]
         quality = self.quality.iloc[idx]
 
         if self.transform:
@@ -141,7 +141,7 @@ class LaserCutEvalDataset(Dataset):
             'labels': {
                 'speed': speed,
                 'focus': focus,
-                # 'pressure': pressure,
+                'pressure': pressure,
                 'quality': quality,
             }
         }
@@ -167,8 +167,8 @@ test_transforms = transforms.Compose([
 training_data = LaserCutEvalDataset(training_index, img_dir, train_transforms)
 testing_data = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
 
-training_dataloader = DataLoader(training_data, batch_size=16, shuffle=True, drop_last=True)
-testing_dataloader = DataLoader(testing_data, batch_size=16, shuffle=True, drop_last=True)
+training_dataloader = DataLoader(training_data, batch_size=1, shuffle=True)
+testing_dataloader = DataLoader(testing_data, batch_size=1, shuffle=True)
 
 n_train_samples = len(training_dataloader)
 
@@ -178,7 +178,7 @@ print(f'Using {device} device')
 
 
 class NeuralNetwork(nn.Module):
-    def __init__(self, n_quality_classes):
+    def __init__(self, n_speed_classes, n_focus_classes, n_pressure_classes, n_quality_classes):
         super(NeuralNetwork, self).__init__()
 
         self.base_model = models.mobilenet_v2().features
@@ -194,10 +194,10 @@ class NeuralNetwork(nn.Module):
             nn.Dropout(p=0.2),
             nn.Linear(in_features=last_channel, out_features=1)
         )
-        # self.pressure = nn.Sequential(
-        #     nn.Dropout(p=0.2),
-        #     nn.Linear(in_features=last_channel, out_features=1)
-        # )
+        self.pressure = nn.Sequential(
+            nn.Dropout(p=0.2),
+            nn.Linear(in_features=last_channel, out_features=1)
+        )
         self.quality = nn.Sequential(
             nn.Dropout(p=0.2),
             nn.Linear(in_features=last_channel, out_features=n_quality_classes)
@@ -208,33 +208,33 @@ class NeuralNetwork(nn.Module):
         x = self.pool(x)
 
         x = torch.flatten(x, start_dim=1)
+
         return {
-            'speed': self.speed(x).squeeze(-1),
-            'focus': self.focus(x).squeeze(-1),
-            # 'pressure': self.pressure(x),
+            'speed': self.speed(x),
+            'focus': self.focus(x),
+            'pressure': self.pressure(x),
             'quality': self.quality(x)
         }
 
     def get_loss(self, net_output, ground_truth):
-        loss_fn_p = nn.MSELoss(reduction='mean')
-        speed_loss = loss_fn_p(net_output['speed'].float(), ground_truth['speed'].float())
-        focus_loss = loss_fn_p(net_output['focus'].float(), ground_truth['focus'].float())
-        # pressure_loss = F.cross_entropy(net_output['pressure'], ground_truth['pressure'])
+        speed_loss = F.cross_entropy(net_output['speed'], ground_truth['speed'])
+        focus_loss = F.cross_entropy(net_output['focus'], ground_truth['focus'])
+        pressure_loss = F.cross_entropy(net_output['pressure'], ground_truth['pressure'])
         quality_loss = F.cross_entropy(net_output['quality'], ground_truth['quality'])
 
-        loss = speed_loss + focus_loss + quality_loss
-        return loss, {'speed': speed_loss, 'focus': focus_loss, 'quality': quality_loss}
+        loss = speed_loss + focus_loss + pressure_loss + quality_loss
+        return loss, {'speed': speed_loss, 'focus': focus_loss, 'pressure': pressure_loss, 'quality': quality_loss}
 
 
 def calculate_metrics(output, target):
-    predicted_speed = output['speed'].cpu().float()
+    _, predicted_speed = output['speed'].cpu()
     gt_speed = target['speed'].cpu()
 
-    predicted_focus = output['focus'].cpu().float()
+    _, predicted_focus = output['focus'].cpu()
     gt_focus = target['focus'].cpu()
 
-    # _, predicted_pressure = output['pressure'].cpu()
-    # gt_pressure = target['pressure'].cpu()
+    _, predicted_pressure = output['pressure'].cpu()
+    gt_pressure = target['pressure'].cpu()
 
     _, predicted_quality = output['quality'].cpu().max(1)
     gt_quality = target['quality'].cpu()
@@ -242,14 +242,14 @@ def calculate_metrics(output, target):
     with warnings.catch_warnings():  # sklearn 在处理混淆矩阵中的零行时可能会产生警告
         warnings.simplefilter("ignore")
         # accuracy_speed = balanced_accuracy_score(y_true=gt_speed.numpy(), y_pred=predicted_speed.numpy())
-        accuracy_speed = 1 - abs(sum(predicted_speed - gt_speed) / sum(gt_speed))
+        accuracy_speed = abs(predicted_speed - gt_speed) / gt_speed
         # accuracy_focus = balanced_accuracy_score(y_true=gt_focus.numpy(), y_pred=predicted_focus.numpy())
-        accuracy_focus = 1- abs(sum(predicted_focus - gt_focus) / sum(gt_focus))
+        accuracy_focus = abs(predicted_focus - gt_focus) / gt_focus
         # accuracy_pressure = balanced_accuracy_score(y_true=gt_pressure.numpy(), y_pred=predicted_pressure.numpy())
-        # accuracy_pressure = abs(abs(predicted_pressure - gt_pressure) / gt_pressure)
+        accuracy_pressure = abs(predicted_pressure - gt_pressure) / gt_pressure
         accuracy_quality = balanced_accuracy_score(y_true=gt_quality.numpy(), y_pred=predicted_quality.numpy())
 
-    return accuracy_speed, accuracy_focus, accuracy_quality
+    return accuracy_speed, accuracy_focus, accuracy_pressure, accuracy_quality
 
 
 if __name__ == '__main__':
@@ -266,7 +266,9 @@ if __name__ == '__main__':
 
     attributes = Attributes(training_index)
 
-    model = NeuralNetwork(n_quality_classes=attributes.num_quality).to(device)
+    model = NeuralNetwork(n_speed_classes=attributes.num_speed, n_focus_classes=attributes.num_focus,
+                          n_pressure_classes=attributes.num_pressure, n_quality_classes=attributes.num_quality).to(
+        device)
 
     optimizer = torch.optim.Adam(model.parameters())
 
@@ -276,7 +278,7 @@ if __name__ == '__main__':
         total_loss = 0
         accuracy_speed = 0
         accuracy_focus = 0
-        # accuracy_pressure = 0
+        accuracy_pressure = 0
         accuracy_quality = 0
         for batch in training_dataloader:
             optimizer.zero_grad()
@@ -287,30 +289,22 @@ if __name__ == '__main__':
 
             loss_train, losses_train = model.get_loss(output, target_labels)
             total_loss += loss_train.item()
-            batch_accuracy_speed, batch_accuracy_focus, batch_accuracy_quality = \
+            batch_accuracy_speed, batch_accuracy_focus, batch_accuracy_pressure, batch_accuracy_quality = \
                 calculate_metrics(output, target_labels)
             accuracy_speed += batch_accuracy_speed
             accuracy_focus += batch_accuracy_focus
-            # accuracy_pressure += batch_accuracy_pressure
+            accuracy_pressure += batch_accuracy_pressure
             accuracy_quality += batch_accuracy_quality
 
             loss_train.backward()
             optimizer.step()
-        print("prediction speed: {:.4f}, prediction focus: {:.4f}".format(
-            output['speed'][1],
-            output['focus'][1],)
-        )
 
-        print("target speed: {:.4f}, target focus: {:.4f}".format(
-            target_labels['speed'][1],
-            target_labels['focus'][1],)
-        )
-
-        print("epoch {:4d}, loss: {:.4f}, speed: {:.4f}, focus: {:.4f}, quality: {:.4f}".format(
+        print("epoch {:4d}, loss: {:.4f}, speed: {:.4f}, focus: {:.4f}, pressure: {:.4f}, quality: {:.4f}".format(
             epoch,
             total_loss / n_train_samples,
-            accuracy_speed.float() / n_train_samples,
-            accuracy_focus.float() / n_train_samples,
+            accuracy_speed / n_train_samples,
+            accuracy_focus / n_train_samples,
+            accuracy_pressure / n_train_samples,
             accuracy_quality / n_train_samples, )
         )
 

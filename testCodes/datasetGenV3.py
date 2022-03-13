@@ -3,6 +3,7 @@ import random
 
 import cv2
 import pandas as pd
+import matplotlib.pyplot as plt
 
 data_dir = 'Data/data2021_ori/90_ori'
 
@@ -44,22 +45,66 @@ def image_reshape(img):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     # cv2.imshow('gray', gray)
     # cv2.waitKey(0)
+    kernelX = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 1))
+    kernelY = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 20))
 
-    binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 25, 15)
+    # binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 25, 15)
     # se = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1))
     # se = cv2.morphologyEx(se, cv2.MORPH_CLOSE, (2, 2))
     # mask = cv2.dilate(binary, se)
     # edge = cv2.Canny(binary, 80, 100)
-    edge = cv2.Laplacian(gray, cv2.CV_8U, ksize=3)
+    # edge = cv2.Laplacian(gray, cv2.CV_8U, ksize=3)
     # cv2.imshow('edge', edge)
     # cv2.waitKey(0)
 
-    src_h, src_w = edge.shape[:2]
-    size = max(src_h, src_w)
+    src_h, src_w = gray.shape[:2]
+    # size = max(src_h, src_w)
     dct_size = (720, 720)
 
-    result_gray = resize_keep_aspectratio(edge, dct_size)
+    result_original = resize_keep_aspectratio(img, dct_size)
+    result_gray = resize_keep_aspectratio(gray, dct_size)
 
+    gblur = cv2.GaussianBlur(result_gray, (5, 5), 0)
+    # cv2.imshow('gaussian', gblur)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    canny = cv2.Canny(gblur, 150, 300)
+    cv2.imshow('canny', canny)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    sure = cv2.dilate(canny, kernelX, iterations=2)
+    cv2.imshow('sure1', sure)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    opening = cv2.erode(sure, kernelX, iterations=4)
+    cv2.imshow('open1', opening)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    sure2 = cv2.dilate(opening, kernelY, iterations=4)
+    cv2.imshow('sure2', sure)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    opening2 = cv2.erode(sure2, kernelY, iterations=2)
+    cv2.imshow('opening2', opening2)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    cover = cv2.dilate(opening2, kernelY, iterations=2)
+    cv2.imshow('cover', cover)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    contours, hier = cv2.findContours(cover.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for c in contours:
+        x, y, w, h = cv2.boundingRect(c)
+
+        minX = min(minX, x)
+        minY = min(minY, y)
+        maxX = max(maxX, x + w - 1)
+        maxY = max(maxY, y + h - 1)
+
+    cv2.rectangle()
     result = cv2.cvtColor(result_gray, cv2.COLOR_GRAY2RGB)
     # result = cv2.bitwise_and(img, mask)
     # cv2.imshow('result', result)
