@@ -2,8 +2,10 @@ import os
 import random
 
 import cv2
+import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+
+# import matplotlib.pyplot as plt
 
 data_dir = 'Data/data2021_ori/90_ori'
 
@@ -57,44 +59,50 @@ def image_reshape(img):
     # cv2.imshow('edge', edge)
     # cv2.waitKey(0)
 
-    src_h, src_w = gray.shape[:2]
+    # src_h, src_w = gray.shape[:2]
     # size = max(src_h, src_w)
     dct_size = (720, 720)
 
     result_original = resize_keep_aspectratio(img, dct_size)
     result_gray = resize_keep_aspectratio(gray, dct_size)
+    # cv2.imshow('original', result_original)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    # result_original = img
+    # result_gray = gray
 
     gblur = cv2.GaussianBlur(result_gray, (5, 5), 0)
     # cv2.imshow('gaussian', gblur)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
-    canny = cv2.Canny(gblur, 150, 300)
-    cv2.imshow('canny', canny)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    sure = cv2.dilate(canny, kernelX, iterations=2)
-    cv2.imshow('sure1', sure)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    opening = cv2.erode(sure, kernelX, iterations=4)
-    cv2.imshow('open1', opening)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    canny = cv2.Canny(gblur, 80, 300)
+    # cv2.imshow('canny', canny)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    sure = cv2.dilate(canny, kernelX, iterations=1)
+    # cv2.imshow('sure1', sure)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    opening = cv2.erode(sure, kernelX, iterations=2)
+    # cv2.imshow('open1', opening)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
-    sure2 = cv2.dilate(opening, kernelY, iterations=4)
-    cv2.imshow('sure2', sure)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    sure2 = cv2.dilate(opening, kernelY, iterations=2)
+    # cv2.imshow('sure2', sure)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     opening2 = cv2.erode(sure2, kernelY, iterations=2)
-    cv2.imshow('opening2', opening2)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('opening2', opening2)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
-    cover = cv2.dilate(opening2, kernelY, iterations=2)
-    cv2.imshow('cover', cover)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
+    cover = cv2.dilate(opening2, kernelY, iterations=1)
+    # cv2.imshow('cover', cover)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    (minX, minY) = (np.inf, np.inf)
+    (maxX, maxY) = (-np.inf, -np.inf)
     contours, hier = cv2.findContours(cover.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for c in contours:
         x, y, w, h = cv2.boundingRect(c)
@@ -104,12 +112,20 @@ def image_reshape(img):
         maxX = max(maxX, x + w - 1)
         maxY = max(maxY, y + h - 1)
 
-    cv2.rectangle()
-    result = cv2.cvtColor(result_gray, cv2.COLOR_GRAY2RGB)
+    result_original[0: y, :] = 0
+    result_original[y + h:, :] = 0
+    result_original[:, 0: x] = 0
+    result_original[:, x + w:] = 0
+    cropped = result_original
+
+    # cv2.imshow('cropped', cropped)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    # result = cv2.cvtColor(result_gray, cv2.COLOR_GRAY2RGB)
     # result = cv2.bitwise_and(img, mask)
     # cv2.imshow('result', result)
     # cv2.waitKey(0)
-    return result
+    return cropped
 
 
 if __name__ == "__main__":
