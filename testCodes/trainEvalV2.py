@@ -134,101 +134,61 @@ def visualize_grid(model, dataloader, attributes, device, checkpoint=None, show_
         plt.tight_layout()
         plt.show()
         '''
-        minSpeed6 = 100
-        maxSpeed6 = -100
-        minSpeed75 = 100
-        maxSpeed75 = -100
-        minSpeed9 = 100
-        maxSpeed9 = -100
-        minSpeed105 = 100
-        maxSpeed105 = -100
-        minSpeed12 = 100
-        maxSpeed12 = -100
-        minSpeed_all = []
-        maxSpeed_all = []
+        speed6 = []
+        speed75 = []
+        speed9 = []
+        speed105 = []
+        speed12 = []
         for i in range(1, len(predicted_focus_all), 1):
             if gt_speed_all[i] == 6.0:
-                minSpeed6 = min(minSpeed6, predicted_speed_all[i] - gt_speed_all[i])
-                maxSpeed6 = max(maxSpeed6, predicted_speed_all[i] - gt_speed_all[i])
+                speed6.append(predicted_speed_all[i])
 
             if gt_speed_all[i] == 7.5:
-                minSpeed75 = min(minSpeed75, predicted_speed_all[i] - gt_speed_all[i])
-                maxSpeed75 = max(maxSpeed75, predicted_speed_all[i] - gt_speed_all[i])
+                speed75.append(predicted_speed_all[i])
 
             if gt_speed_all[i] == 9.0:
-                minSpeed9 = min(minSpeed9, predicted_speed_all[i] - gt_speed_all[i])
-                maxSpeed9 = max(maxSpeed9, predicted_speed_all[i] - gt_speed_all[i])
+                speed9.append(predicted_speed_all[i])
 
             if gt_speed_all[i] == 10.5:
-                minSpeed105 = min(minSpeed105, predicted_speed_all[i] - gt_speed_all[i])
-                maxSpeed105 = max(maxSpeed105, predicted_speed_all[i] - gt_speed_all[i])
+                speed105.append(predicted_speed_all[i])
 
             if gt_speed_all[i] == 12:
-                minSpeed12 = min(minSpeed12, predicted_speed_all[i] - gt_speed_all[i])
-                maxSpeed12 = max(maxSpeed12, predicted_speed_all[i] - gt_speed_all[i])
-        minSpeed_all.append(-minSpeed6)
-        minSpeed_all.append(-minSpeed75)
-        minSpeed_all.append(-minSpeed9)
-        minSpeed_all.append(-minSpeed105)
-        minSpeed_all.append(-minSpeed12)
-        maxSpeed_all.append(maxSpeed6)
-        maxSpeed_all.append(maxSpeed75)
-        maxSpeed_all.append(maxSpeed9)
-        maxSpeed_all.append(maxSpeed105)
-        maxSpeed_all.append(maxSpeed12)
+                speed12.append(predicted_speed_all[i])
+        speed_avg = [np.mean(speed6), np.mean(speed75), np.mean(speed9), np.mean(speed105), np.mean(speed12)]
+        speed_arr = [np.std(speed6), np.std(speed75), np.std(speed9), np.std(speed105), np.std(speed12)]
 
-        minFocus2 = 100
-        maxFocus2 = -100
-        minFocus28 = 100
-        maxFocus28 = -100
-        minFocus35 = 100
-        maxFocus35 = -100
-        minFocus43 = 100
-        maxFocus43 = -100
-        minFocus5 = 100
-        maxFocus5 = -100
-        minFocus_all = []
-        maxFocus_all = []
+        focus2 = []
+        focus28 = []
+        focus35 = []
+        focus43 = []
+        focus5 = []
 
         for i in range(1, len(predicted_focus_all), 1):
             if gt_focus_all[i] == -2.0:
-                minFocus2 = min(minFocus2, predicted_focus_all[i] - gt_focus_all[i])
-                maxFocus2 = max(maxFocus2, predicted_focus_all[i] - gt_focus_all[i])
+                focus2.append(predicted_focus_all[i])
 
             if gt_focus_all[i] == -2.8:
-                minFocus28 = min(minFocus28, predicted_focus_all[i] - gt_focus_all[i])
-                maxFocus28 = max(maxFocus28, predicted_focus_all[i] - gt_focus_all[i])
+                focus28.append(predicted_focus_all[i])
 
             if gt_focus_all[i] == -3.5:
-                minFocus35 = min(minFocus35, predicted_focus_all[i] - gt_focus_all[i])
-                maxFocus35 = max(maxFocus35, predicted_focus_all[i] - gt_focus_all[i])
+                focus35.append(predicted_focus_all[i])
 
             if gt_focus_all[i] == -4.3:
-                minFocus43 = min(minFocus43, predicted_focus_all[i] - gt_focus_all[i])
-                maxFocus43 = max(maxFocus43, predicted_focus_all[i] - gt_focus_all[i])
+                focus43.append(predicted_focus_all[i])
 
             if gt_focus_all[i] == -5.0:
-                minFocus5 = min(minFocus5, predicted_focus_all[i] - gt_focus_all[i])
-                maxFocus5 = max(maxFocus5, predicted_focus_all[i] - gt_focus_all[i])
-        minFocus_all.append(-minFocus2)
-        minFocus_all.append(-minFocus28)
-        minFocus_all.append(-minFocus35)
-        minFocus_all.append(-minFocus43)
-        minFocus_all.append(-minFocus5)
-        maxFocus_all.append(maxFocus2)
-        maxFocus_all.append(maxFocus28)
-        maxFocus_all.append(maxFocus35)
-        maxFocus_all.append(maxFocus43)
-        maxFocus_all.append(maxFocus5)
+                focus5.append(predicted_focus_all[i])
+        focus_avg = [np.mean(focus2), np.mean(focus28), np.mean(focus35), np.mean(focus43), np.mean(focus5)]
+        focus_arr = [np.std(focus2), np.std(focus28), np.std(focus35), np.std(focus43), np.std(focus5)]
 
         plt.figure()
-        plt.errorbar(speed_labels, speed_labels, yerr=[minSpeed_all, maxSpeed_all], fmt='bo:')
+        plt.errorbar(speed_labels, speed_avg, yerr=speed_arr, fmt='bo:')
         plt.xlabel('ground truth speed')
         plt.ylabel('predicted speed')
         plt.show()
 
         plt.figure()
-        plt.errorbar(focus_labels, focus_labels, yerr=[minFocus_all, maxFocus_all], fmt='bo:')
+        plt.errorbar(focus_labels, focus_avg, yerr=focus_arr, fmt='bo:')
         plt.xlabel('ground truth focus')
         plt.ylabel('predicted focus')
         plt.show()
@@ -266,7 +226,7 @@ def visualize_grid(model, dataloader, attributes, device, checkpoint=None, show_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Inference pipeline')
-    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-16_15-02\checkpoint-000425.pth',
+    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-17_15-06\checkpoint-000700.pth',
                         help="Path to the checkpoint")
     parser.add_argument('--device', type=str, default='cuda',
                         help="Device: 'cuda' or 'cpu'")
@@ -285,7 +245,7 @@ if __name__ == '__main__':
         transforms.Normalize(mean, std)
     ])
 
-    test_dataset = LaserCutEvalDataset(training_index, img_dir, test_transforms)
+    test_dataset = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
     test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
     model = NeuralNetwork(n_quality_classes=attributes.num_quality).to(device)

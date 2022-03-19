@@ -76,17 +76,17 @@ def image_reshape(img):
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
     canny = cv2.Canny(gblur, 80, 300)
-    cv2.imshow('canny', canny)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('canny', canny)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     sure = cv2.dilate(canny, kernelX, iterations=1)
-    cv2.imshow('sure1', sure)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('sure1', sure)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     opening = cv2.erode(sure, kernelX, iterations=2)
-    cv2.imshow('open1', opening)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('open1', opening)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     sure2 = cv2.dilate(opening, kernelY, iterations=2)
     # cv2.imshow('sure2', sure)
@@ -165,7 +165,7 @@ if __name__ == "__main__":
             # imsave = Image.fromarray(np.uint8(img_back))
             # imsave.save('F:/Work/Bachelor-thesis/Data/data_highfreq/' + filename)
 
-            if random.random() < 0.65:
+            if random.random() < 0.8 and (datasheet.loc[i - 1, 'speed'] != 9):
                 training_index.write(filename + '\t' + str(datasheet.loc[i - 1, 'speed']) + '\t' + str(
                     datasheet.loc[i - 1, 'focus']) + '\t' + str(
                     datasheet.loc[i - 1, 'pressure']) + '\t' + str(datasheet.loc[i - 1, 'quality'] - 1) + '\n')
