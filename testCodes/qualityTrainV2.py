@@ -87,7 +87,7 @@ class Attributes:
         self.speed_labels = [6, 7.5, 9, 10.5, 12]
         self.focus_labels = [-2, -2.8, -3.5, -4.3, -5]
         # self.pressure_labels = [7, 7.8, 8.5, 9.3, 10]
-        self.quality_labels = [1, 2, 3]
+        self.quality_labels = [1, 2, 3, 4, 5]
 
         self.num_speed = len(self.speed_labels)
         self.num_focus = len(self.focus_labels)
@@ -114,7 +114,7 @@ class LaserCutEvalDataset(Dataset):
         self.speed = self.img_data[1]
         self.focus = self.img_data[2]
         # self.pressure = self.img_data[3]
-        self.quality = self.img_data[4]
+        self.quality = self.img_data[3]
         self.img_dir = img_dir
         self.transform = transform
         self.target_transform = target_transform

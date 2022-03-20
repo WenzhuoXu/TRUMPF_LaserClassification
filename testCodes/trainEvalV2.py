@@ -8,9 +8,9 @@ import torchvision.transforms as transforms
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from torch.utils.data import DataLoader
 
-from qualityTrainV2 import LaserCutEvalDataset, Attributes
-from qualityTrainV2 import NeuralNetwork
-from qualityTrainV2 import calculate_metrics
+from qualityTrainV2_4mm import LaserCutEvalDataset, Attributes
+from qualityTrainV2_4mm import NeuralNetwork
+from qualityTrainV2_4mm import calculate_metrics
 
 mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
@@ -32,8 +32,8 @@ def visualize_grid(model, dataloader, attributes, device, checkpoint=None, show_
         checkpoint_load(model, checkpoint)
     model.eval()
 
-    speed_labels = [6.0, 7.5, 9.0, 10.5, 12]
-    focus_labels = [-2.0, -2.8, -3.5, -4.3, -5.0]
+    speed_labels = [11.0, 12.0, 13.0, 14.0, 16.0, 18.0, 21.3, 21.8, 22.3, 22.8]
+    focus_labels = [-0.2, -0.6, -1.0, -2.0, -2.3, -2.6]
     imgs = []
     labels = []
     gt_labels = []
@@ -134,52 +134,81 @@ def visualize_grid(model, dataloader, attributes, device, checkpoint=None, show_
         plt.tight_layout()
         plt.show()
         '''
-        speed6 = []
-        speed75 = []
-        speed9 = []
-        speed105 = []
+        speed11 = []
         speed12 = []
+        speed13 = []
+        speed14 = []
+        speed16 = []
+        speed18 = []
+        speed213 = []
+        speed218 = []
+        speed223 = []
+        speed228 = []
         for i in range(1, len(predicted_focus_all), 1):
-            if gt_speed_all[i] == 6.0:
-                speed6.append(predicted_speed_all[i])
+            if gt_speed_all[i] == 11.0:
+                speed11.append(predicted_speed_all[i])
 
-            if gt_speed_all[i] == 7.5:
-                speed75.append(predicted_speed_all[i])
-
-            if gt_speed_all[i] == 9.0:
-                speed9.append(predicted_speed_all[i])
-
-            if gt_speed_all[i] == 10.5:
-                speed105.append(predicted_speed_all[i])
-
-            if gt_speed_all[i] == 12:
+            if gt_speed_all[i] == 12.0:
                 speed12.append(predicted_speed_all[i])
-        speed_avg = [np.mean(speed6), np.mean(speed75), np.mean(speed9), np.mean(speed105), np.mean(speed12)]
-        speed_arr = [np.std(speed6), np.std(speed75), np.std(speed9), np.std(speed105), np.std(speed12)]
 
+            if gt_speed_all[i] == 13.0:
+                speed13.append(predicted_speed_all[i])
+
+            if gt_speed_all[i] == 14.0:
+                speed14.append(predicted_speed_all[i])
+
+            if gt_speed_all[i] == 16:
+                speed16.append(predicted_speed_all[i])
+
+            if gt_speed_all[i] == 18:
+                speed18.append(predicted_speed_all[i])
+
+            if gt_speed_all[i] == 21.3:
+                speed213.append(predicted_speed_all[i])
+
+            if gt_speed_all[i] == 21.8:
+                speed218.append(predicted_speed_all[i])
+
+            if gt_speed_all[i] == 22.3:
+                speed223.append(predicted_speed_all[i])
+
+            if gt_speed_all[i] == 22.8:
+                speed228.append(predicted_speed_all[i])
+
+        speed_avg = [np.mean(speed11), np.mean(speed12), np.mean(speed13), np.mean(speed14), np.mean(speed16),
+                     np.mean(speed18), np.mean(speed213), np.mean(speed218), np.mean(speed223), np.mean(speed228)]
+        speed_arr = [np.std(speed11), np.std(speed12), np.std(speed13), np.std(speed14), np.std(speed16),
+                     np.std(speed18), np.std(speed213), np.std(speed218), np.std(speed223), np.std(speed228)]
+
+        focus02 = []
+        focus06 = []
+        focus1 = []
         focus2 = []
-        focus28 = []
-        focus35 = []
-        focus43 = []
-        focus5 = []
+        focus23 = []
+        focus26 = []
 
         for i in range(1, len(predicted_focus_all), 1):
+            if gt_focus_all[i] == -0.2:
+                focus02.append(predicted_focus_all[i])
+
+            if gt_focus_all[i] == -0.6:
+                focus06.append(predicted_focus_all[i])
+
+            if gt_focus_all[i] == -1.0:
+                focus1.append(predicted_focus_all[i])
+
             if gt_focus_all[i] == -2.0:
                 focus2.append(predicted_focus_all[i])
 
-            if gt_focus_all[i] == -2.8:
-                focus28.append(predicted_focus_all[i])
+            if gt_focus_all[i] == -2.3:
+                focus23.append(predicted_focus_all[i])
 
-            if gt_focus_all[i] == -3.5:
-                focus35.append(predicted_focus_all[i])
+            if gt_focus_all[i] == -2.6:
+                focus26.append(predicted_focus_all[i])
 
-            if gt_focus_all[i] == -4.3:
-                focus43.append(predicted_focus_all[i])
-
-            if gt_focus_all[i] == -5.0:
-                focus5.append(predicted_focus_all[i])
-        focus_avg = [np.mean(focus2), np.mean(focus28), np.mean(focus35), np.mean(focus43), np.mean(focus5)]
-        focus_arr = [np.std(focus2), np.std(focus28), np.std(focus35), np.std(focus43), np.std(focus5)]
+        focus_avg = [np.mean(focus02), np.mean(focus06), np.mean(focus1), np.mean(focus2), np.mean(focus23),
+                     np.mean(focus26)]
+        focus_arr = [np.std(focus02), np.std(focus06), np.std(focus1), np.std(focus2), np.std(focus23), np.std(focus26)]
 
         plt.figure()
         plt.errorbar(speed_labels, speed_avg, yerr=speed_arr, fmt='bo:')
@@ -196,7 +225,7 @@ def visualize_grid(model, dataloader, attributes, device, checkpoint=None, show_
         cn_matrix = confusion_matrix(
             y_true=gt_quality_all,
             y_pred=predicted_quality_all,
-            labels=[1, 2, 3],
+            labels=[1, 2, 3, 4, 5],
             normalize='true')
         ConfusionMatrixDisplay(cn_matrix).plot(
             include_values=True, xticks_rotation='vertical')
@@ -226,7 +255,7 @@ def visualize_grid(model, dataloader, attributes, device, checkpoint=None, show_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Inference pipeline')
-    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-17_15-06\checkpoint-000700.pth',
+    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-19_17-18\checkpoint-000300.pth',
                         help="Path to the checkpoint")
     parser.add_argument('--device', type=str, default='cuda',
                         help="Device: 'cuda' or 'cpu'")
