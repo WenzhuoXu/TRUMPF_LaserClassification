@@ -180,27 +180,33 @@ print(f'Using {device} device')
 class NeuralNetwork(nn.Module):
     def __init__(self, n_quality_classes):
         super(NeuralNetwork, self).__init__()
-        # self.base_model = models.mobilenet_v3_large(pretrained=True).features
-        self.base_model = models.mobilenet_v2(pretrained='True').features
-        last_channel = models.mobilenet_v2().last_channel
+        self.base_model = models.mobilenet_v3_large(pretrained=True).features
+        # self.base_model = models.mobilenet_v2(pretrained='True').features
+        last_channel = models.mobilenet_v3_large(pretrained=True).lastconv_output_channels
 
-        self.pool = nn.AdaptiveAvgPool2d((1, 1))
+        self.pool = nn.AdaptiveAvgPool2d(1)
 
         self.speed = nn.Sequential(
-            nn.Dropout(p=0.4),
-            nn.Linear(in_features=last_channel, out_features=1)
+            nn.Linear(in_features=last_channel, out_features=1000),
+            nn.Hardswish(inplace=True),
+            nn.Dropout(p=0.4, inplace=True),
+            nn.Linear(in_features=1000, out_features=1),
         )
         self.focus = nn.Sequential(
-            nn.Dropout(p=0.4),
-            nn.Linear(in_features=last_channel, out_features=1)
+            nn.Linear(in_features=last_channel, out_features=1000),
+            nn.Hardswish(inplace=True),
+            nn.Dropout(p=0.4, inplace=True),
+            nn.Linear(in_features=1000, out_features=1)
         )
         # self.pressure = nn.Sequential(
         #     nn.Dropout(p=0.2),
         #     nn.Linear(in_features=last_channel, out_features=1)
         # )
         self.quality = nn.Sequential(
-            nn.Dropout(p=0.8),
-            nn.Linear(in_features=last_channel, out_features=n_quality_classes)
+            nn.Linear(in_features=last_channel, out_features=1000),
+            nn.Hardswish(inplace=True),
+            nn.Dropout(p=0.8, inplace=True),
+            nn.Linear(in_features=1000, out_features=n_quality_classes)
         )
 
     def forward(self, x):
