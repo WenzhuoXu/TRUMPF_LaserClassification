@@ -15,9 +15,9 @@ from qualityTrainV2_4mm import calculate_metrics
 mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
 
-training_index = 'Data/data2021_ori/90_ori_training_index.txt'
-testing_index = 'Data/data2021_ori/90_ori_testing_index.txt'
-img_dir = 'Data/data_highfreq'
+training_index = 'Data/training_index.txt'
+testing_index = 'Data/testing_index.txt'
+img_dir = 'Data/4mm_processed'
 
 
 def checkpoint_load(model, name):
@@ -255,7 +255,7 @@ def visualize_grid(model, dataloader, attributes, device, checkpoint=None, show_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Inference pipeline')
-    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-19_17-18\checkpoint-000300.pth',
+    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-23_11-07\checkpoint-000475.pth',
                         help="Path to the checkpoint")
     parser.add_argument('--device', type=str, default='cuda',
                         help="Device: 'cuda' or 'cpu'")

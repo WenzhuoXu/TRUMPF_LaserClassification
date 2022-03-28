@@ -112,10 +112,10 @@ def image_reshape(img):
         maxX = max(maxX, x + w - 1)
         maxY = max(maxY, y + h - 1)
 
-    result_original[0: y, :] = 0
-    result_original[y + h:, :] = 0
-    result_original[:, 0: x] = 0
-    result_original[:, x + w:] = 0
+    # result_original[0: y, :] = 0
+    # result_original[y + h:, :] = 0
+    # result_original[:, 0: x] = 0
+    # result_original[:, x + w:] = 0
     cropped = result_original
 
     # cv2.imshow('cropped', cropped)
@@ -125,7 +125,7 @@ def image_reshape(img):
     # result = cv2.bitwise_and(img, mask)
     # cv2.imshow('result', result)
     # cv2.waitKey(0)
-    return cropped
+    return result_original
 
 
 if __name__ == "__main__":
@@ -166,7 +166,7 @@ if __name__ == "__main__":
         # imsave = Image.fromarray(np.uint8(img_back))
         # imsave.save('F:/Work/Bachelor-thesis/Data/data_highfreq/' + filename)
 
-        if random.random() < 0.75:
+        if random.random() < 0.8 and datasheet.loc[i - 1, 'speed'] != 21.8:
             training_index.write(filename + '\t' + str(datasheet.loc[i - 1, 'speed']) + '\t' + str(
                 datasheet.loc[i - 1, 'focus']) + '\t' + str(datasheet.loc[i - 1, 'quality'] - 1) + '\n')
         else:
