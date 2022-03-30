@@ -167,8 +167,8 @@ test_transforms = transforms.Compose([
 training_data = LaserCutEvalDataset(training_index, img_dir, train_transforms)
 testing_data = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
 
-training_dataloader = DataLoader(training_data, batch_size=3, shuffle=True, drop_last=True)
-testing_dataloader = DataLoader(testing_data, batch_size=3, shuffle=True, drop_last=True)
+training_dataloader = DataLoader(training_data, batch_size=16, shuffle=True, drop_last=True)
+testing_dataloader = DataLoader(testing_data, batch_size=16, shuffle=True, drop_last=True)
 
 n_train_samples = len(training_dataloader)
 

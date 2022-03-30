@@ -8,9 +8,9 @@ import torchvision.transforms as transforms
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from torch.utils.data import DataLoader
 
-from qualityTrainV2_4mm import LaserCutEvalDataset, Attributes
-from qualityTrainV2_4mm import NeuralNetwork
-from qualityTrainV2_4mm import calculate_metrics
+from qualityTrainV3_4mm import LaserCutEvalDataset, Attributes
+from qualityTrainV3_4mm import NeuralNetwork
+from qualityTrainV3_4mm import calculate_metrics
 
 mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
@@ -255,7 +255,7 @@ def visualize_grid(model, dataloader, attributes, device, checkpoint=None, show_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Inference pipeline')
-    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-23_11-07\checkpoint-000475.pth',
+    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-28_18-04\checkpoint-000050.pth',
                         help="Path to the checkpoint")
     parser.add_argument('--device', type=str, default='cuda',
                         help="Device: 'cuda' or 'cpu'")
