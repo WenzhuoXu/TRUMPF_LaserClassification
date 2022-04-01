@@ -255,7 +255,7 @@ def visualize_grid(model, dataloader, attributes, device, checkpoint=None, show_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Inference pipeline')
-    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-28_18-04\checkpoint-000050.pth',
+    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-31_21-30\checkpoint-000050.pth',
                         help="Path to the checkpoint")
     parser.add_argument('--device', type=str, default='cuda',
                         help="Device: 'cuda' or 'cpu'")

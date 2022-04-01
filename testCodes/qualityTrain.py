@@ -84,8 +84,8 @@ def validate(model, dataloader, logger, iteration, device, checkpoint=None):
 
 class Attributes:
     def __init__(self, annotation_file):
-        self.speed_labels = [6, 7.5, 9, 10.5, 12]
-        self.focus_labels = [-2, -2.8, -3.5, -4.3, -5]
+        self.speed_labels = [6, 7, 9, 10, 12]
+        self.focus_labels = [-2, -3, -4, -5, -6]
         self.pressure_labels = [7, 7.8, 8.5, 9.3, 10]
         self.quality_labels = [1, 2, 3]
 
@@ -187,11 +187,11 @@ class NeuralNetwork(nn.Module):
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
 
         self.speed = nn.Sequential(
-            nn.Dropout(p=0.3),
+            nn.Dropout(p=0.6),
             nn.Linear(in_features=last_channel, out_features=n_speed_classes)
         )
         self.focus = nn.Sequential(
-            nn.Dropout(p=0.5),
+            nn.Dropout(p=0.2),
             nn.Linear(in_features=last_channel, out_features=n_focus_classes)
         )
         self.pressure = nn.Sequential(
@@ -306,6 +306,9 @@ if __name__ == '__main__':
         )
 
         logger.add_scalar('train_loss', total_loss / n_train_samples, epoch)
+        logger.add_scalar('train_accu_speed', accuracy_speed / n_train_samples, epoch)
+        logger.add_scalar('train_accu_focus', accuracy_focus / n_train_samples, epoch)
+        logger.add_scalar('train_accu_quality', accuracy_quality / n_train_samples, epoch)
 
         if epoch % 5 == 0:
             validate(model, testing_dataloader, logger, epoch, device)

@@ -189,13 +189,13 @@ class NeuralNetwork(nn.Module):
         self.speed = nn.Sequential(
             nn.Linear(in_features=last_channel, out_features=1000),
             nn.Hardswish(inplace=True),
-            nn.Dropout(p=0.4, inplace=True),
+            nn.Dropout(p=0.2, inplace=True),
             nn.Linear(in_features=1000, out_features=1),
         )
         self.focus = nn.Sequential(
             nn.Linear(in_features=last_channel, out_features=1000),
             nn.Hardswish(inplace=True),
-            nn.Dropout(p=0.4, inplace=True),
+            nn.Dropout(p=0.2, inplace=True),
             nn.Linear(in_features=1000, out_features=1)
         )
         # self.pressure = nn.Sequential(
@@ -205,7 +205,7 @@ class NeuralNetwork(nn.Module):
         self.quality = nn.Sequential(
             nn.Linear(in_features=last_channel, out_features=1000),
             nn.Hardswish(inplace=True),
-            nn.Dropout(p=0.8, inplace=True),
+            nn.Dropout(p=0.2, inplace=True),
             nn.Linear(in_features=1000, out_features=n_quality_classes)
         )
 
@@ -222,7 +222,7 @@ class NeuralNetwork(nn.Module):
         }
 
     def get_loss(self, net_output, ground_truth):
-        loss_fn_p = nn.MSELoss(reduction='mean')
+        loss_fn_p = nn.SmoothL1Loss(reduction='mean')
         speed_loss = loss_fn_p(net_output['speed'].float(), ground_truth['speed'].float())
         focus_loss = loss_fn_p(net_output['focus'].float(), ground_truth['focus'].float())
         # pressure_loss = F.cross_entropy(net_output['pressure'], ground_truth['pressure'])
@@ -321,6 +321,9 @@ if __name__ == '__main__':
         )
 
         logger.add_scalar('train_loss', total_loss / n_train_samples, epoch)
+        logger.add_scalar('train_accu_speed', accuracy_speed / n_train_samples, epoch)
+        logger.add_scalar('train_accu_focus', accuracy_focus / n_train_samples, epoch)
+        logger.add_scalar('train_accu_quality', accuracy_quality / n_train_samples, epoch)
 
         if epoch % 5 == 0:
             validate(model, testing_dataloader, logger, epoch, device)

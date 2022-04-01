@@ -8,9 +8,9 @@ import torchvision.transforms as transforms
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from torch.utils.data import DataLoader
 
-from qualityTrainV2 import LaserCutEvalDataset, Attributes
-from qualityTrainV2 import NeuralNetwork
-from qualityTrainV2 import calculate_metrics
+from qualityTrain import LaserCutEvalDataset, Attributes
+from qualityTrain import NeuralNetwork
+from qualityTrain import calculate_metrics
 
 mean = [0.485, 0.456, 0.406]
 std = [0.229, 0.224, 0.225]
@@ -59,7 +59,7 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
             gt_quality = batch['labels']['quality']
             output = model(img.to(device))
 
-            batch_accuracy_speed, batch_accuracy_focus, batch_accuracy_quality = \
+            batch_accuracy_speed, batch_accuracy_focus, batch_accuracy_pressure, batch_accuracy_quality = \
                 calculate_metrics(output, batch['labels'])
             accuracy_speed += batch_accuracy_speed
             accuracy_focus += batch_accuracy_focus
@@ -67,21 +67,21 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
             accuracy_quality += batch_accuracy_quality
 
             # get the most confident prediction for each image
-            predicted_speed = output['speed'].cpu().float()
-            predicted_focus = output['focus'].cpu().float()
+            _, predicted_speed = output['speed'].cpu().max(1)
+            _, predicted_focus = output['focus'].cpu().max(1)
             # _, predicted_pressure = output['pressure'].cpu().max(1)
             _, predicted_quality = output['quality'].cpu().max(1)
 
             for i in range(img.shape[0]):
                 image = np.clip(img[i].permute(1, 2, 0).numpy() * std + mean, 0, 1)
 
-                # predicted_speed[i] = attributes.speed_id_to_name[predicted_speed[i].item()]
-                # predicted_focus[i] = attributes.focus_id_to_name[predicted_focus[i].item()]
+                predicted_speed[i] = attributes.speed_id_to_name[predicted_speed[i].item()]
+                predicted_focus[i] = attributes.focus_id_to_name[predicted_focus[i].item()]
                 # predicted_pressure[i] = attributes.pressure_id_to_name[predicted_pressure[i].item()]
                 predicted_quality[i] = attributes.quality_id_to_name[predicted_quality[i].item()]
 
-                # gt_speed[i] = attributes.speed_id_to_name[gt_speed[i].item()]
-                # gt_focus[i] = attributes.focus_id_to_name[gt_focus[i].item()]
+                gt_speed[i] = attributes.speed_id_to_name[gt_speed[i].item()]
+                gt_focus[i] = attributes.focus_id_to_name[gt_focus[i].item()]
                 # gt_pressure[i] = attributes.pressure_id_to_name[gt_pressure[i].item()]
                 gt_quality[i] = attributes.quality_id_to_name[gt_quality[i].item()]
 
@@ -106,7 +106,7 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
             accuracy_focus / n_samples,
             accuracy_quality / n_samples
         ))
-        '''
+
         # 绘制混淆矩阵
         if show_cn_matrices:
             # color
@@ -120,19 +120,18 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
         plt.title("Speed")
         plt.tight_layout()
         plt.show()
-
         # gender
         cn_matrix = confusion_matrix(
             y_true=gt_focus_all,
             y_pred=predicted_focus_all,
-            labels=[-2, -3, -4, -5],
+            labels=[-2, -3, -4, -5, -6],
             normalize='true')
         ConfusionMatrixDisplay(cn_matrix).plot(
             include_values=True, xticks_rotation='horizontal')
         plt.title("Focus")
         plt.tight_layout()
         plt.show()
-        '''
+
         cn_matrix = confusion_matrix(
             y_true=gt_quality_all,
             y_pred=predicted_quality_all,
@@ -165,7 +164,7 @@ def visualize_grid(model, dataloader, attributes, device, show_cn_matrices=True,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Inference pipeline')
-    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-16_15-02\checkpoint-000425.pth',
+    parser.add_argument('--checkpoint', type=str, default=r'checkpoints\2022-03-31_17-05\checkpoint-000375.pth',
                         help="Path to the checkpoint")
     parser.add_argument('--device', type=str, default='cuda',
                         help="Device: 'cuda' or 'cpu'")
@@ -175,7 +174,7 @@ if __name__ == '__main__':
     # device = torch.device("cpu")
 
     # 属性变量包含数据集中类别的标签以及字符串名称和 ID 之间的映射
-    attributes = Attributes(training_index)
+    attributes = Attributes(testing_index)
 
     # 在验证期间，我们只使用张量和归一化变换
     test_transforms = transforms.Compose([
@@ -184,10 +183,12 @@ if __name__ == '__main__':
         transforms.Normalize(mean, std)
     ])
 
-    test_dataset = LaserCutEvalDataset(testing_index, img_dir, test_transforms)
+    test_dataset = LaserCutEvalDataset(training_index, img_dir, test_transforms)
     test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
-    model = NeuralNetwork(n_quality_classes=attributes.num_quality).to(device)
+    model = NeuralNetwork(n_speed_classes=attributes.num_speed, n_focus_classes=attributes.num_focus,
+                          n_pressure_classes=attributes.num_pressure,
+                          n_quality_classes=attributes.num_quality).to(device)
 
     # 训练模型的可视化
     visualize_grid(model, test_dataloader, attributes, device, checkpoint=args.checkpoint)
