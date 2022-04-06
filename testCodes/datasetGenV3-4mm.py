@@ -166,7 +166,7 @@ if __name__ == "__main__":
         # imsave = Image.fromarray(np.uint8(img_back))
         # imsave.save('F:/Work/Bachelor-thesis/Data/data_highfreq/' + filename)
 
-        if random.random() < 0.8 and datasheet.loc[i - 1, 'speed'] != 21.8:
+        if random.random() < 0.8 and datasheet.loc[i - 1, 'speed'] != 10:
             training_index.write(filename + '\t' + str(datasheet.loc[i - 1, 'speed']) + '\t' + str(
                 datasheet.loc[i - 1, 'focus']) + '\t' + str(datasheet.loc[i - 1, 'quality'] - 1) + '\n')
         else:
